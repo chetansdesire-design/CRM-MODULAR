@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URBAN CASA - Elite CRM v8.3</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
+
+    <style>
+        :root {
+            --brand: #2563eb; --brand-hover: #1d4ed8; --brand-light: #60a5fa;
+            --bg: #0f172a; --panel: #1e293b; --text-main: #ffffff; 
+            --text-muted: #94a3b8; --border-clr: #334155;
+            --update-orange: #f59e0b; 
+        }
+
+        * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: var(--bg); color: var(--text-main); margin: 0; display: flex; height: 100vh; overflow: hidden; }
+
+        /* SIDEBAR FIX */
+        .sidebar { 
+            width: 210px; background: #020617; border-right: 1px solid var(--border-clr); 
+            padding: 24px 12px; display: flex; flex-direction: column; overflow-y: auto;
+            z-index: 100; /* Ensures sidebar is above content for clicks */
+        }
+        .logo-main { font-size: 18px; font-weight: 800; color: #fff; text-transform: uppercase; margin: 0; text-align: center; }
+        .tagline-row { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 20px; }
+        .v-badge { background: var(--border-clr); color: var(--text-muted); font-size: 8px; padding: 1px 4px; border-radius: 4px; font-weight: 800; }
+
+        /* INLINE UPDATES */
+        #msgContainer { 
+            background: rgba(0,0,0,0.3); border: 1px solid var(--update-orange); 
+            border-radius: 8px; margin-top: 10px; display: none; flex-direction: column; max-height: 300px;
+        }
+        #msgList, #activityList { padding: 8px; overflow-y: auto; font-size: 11px; pointer-events: all; }
+        .msg-line { margin-bottom: 8px; padding-left: 6px; border-left: 2px solid var(--update-orange); position: relative; }
+
+        /* MAIN CONTENT */
+        .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; z-index: 1; }
+        .entry-card { padding: 20px 24px; background: #111827; border-bottom: 2px solid var(--brand); display: flex; gap: 10px; align-items: flex-end; }
+        
+        /* TABLE & CLICK FIXES */
+        .content { flex: 1; padding: 20px; overflow-y: auto; }
+        .table-wrap { border-radius: 12px; border: 1px solid var(--border-clr); background: #0f172a; overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        td { padding: 12px; border-bottom: 1px solid #1e293b; font-size: 13px; color: #e2e8f0; vertical-align: middle; }
+        
+        /* DATE CLICK ACCESSIBILITY */
+        .td-date { padding: 0 !important; position: relative; cursor: pointer; } 
+        .date-input { 
+            background: transparent; border: none; color: #fff; padding: 12px; 
+            font-size: 12px; width: 100%; height: 100%; cursor: pointer; 
+            display: block; outline: none; position: relative; z-index: 5;
+            pointer-events: all;
+        }
+        .date-input::-webkit-calendar-picker-indicator { 
+            position: absolute; right: 10px; filter: invert(1); cursor: pointer; z-index: 10;
+        }
+
+        /* ACTIONS */
+        .action-cell { display: flex; gap: 6px; justify-content: center; pointer-events: all; }
+        .btn-action { 
+            background: rgba(245, 158, 11, 0.1); border: 1px solid var(--update-orange); color: var(--update-orange); 
+            width: 30px; height: 30px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+        .btn-action:hover { background: var(--update-orange); color: #000; }
+        
+        .status-badge { padding: 5px; border-radius: 6px; font-size: 9px; font-weight: 800; text-align: center; cursor: pointer; display: block; text-transform: uppercase; pointer-events: all; }
+        .s-0 { background: rgba(52, 211, 153, 0.1); color: #34d399; }
+        .s-4 { background: #ffffff; color: #000; }
+
+        .nav-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 2px; pointer-events: all; }
+        .nav-item.active { background: var(--brand); color: #fff; }
+
+        #loginOverlay { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+    </style>
+</head>
+<body>
+
+    <div id="loginOverlay">
+        <div style="background: var(--panel); padding: 40px; border-radius: 16px; border: 1px solid var(--border-clr); width: 320px; text-align: center;">
+            <h2 style="margin-top:0">URBAN CASA</h2>
+            <input type="text" id="u_name" placeholder="Username" style="width:100%; padding:12px; margin:10px 0; background:#0f172a; border:1px solid var(--border-clr); color:white; border-radius:8px;">
+            <input type="password" id="u_pass" placeholder="Password" style="width:100%; padding:12px; margin:10px 0; background:#0f172a; border:1px solid var(--border-clr); color:white; border-radius:8px;">
+            <button class="btn-action" style="width:100%; height:45px; background:var(--brand); color:white; border:none; font-weight:800;" onclick="checkLogin()">Access CRM</button>
+            <p id="loginError" style="color:#f87171; font-size:12px; margin-top:15px; display:none;">Invalid Credentials</p>
+        </div>
+    </div>
+
+    <nav class="sidebar">
+        <div class="logo-container">
+            <h1 class="logo-main">URBAN CASA</h1>
+            <div class="tagline-row"><span class="logo-tagline" style="font-size:9px; text-transform:uppercase; color:var(--brand-light)">Elite CRM</span><span class="v-badge">v8.3</span></div>
+        </div>
+        
+        <div class="nav-item active" onclick="setFilter('ALL', this)"><span>All Database</span><span id="c-all">0</span></div>
+        <div id="sidebarStages"></div>
+        <div class="nav-item" onclick="setFilter('TODAY', this)" style="color:#34d399"><span>📅 Today</span><span id="c-today">0</span></div>
+        <div class="nav-item" onclick="setFilter('OVERDUE', this)" style="color:#f87171"><span>⚠️ Overdue</span><span id="c-overdue">0</span></div>
+        
+        <div class="nav-item" id="msgNotif" onclick="toggleMessages()" style="margin-top:15px; border:1px solid var(--update-orange)"><span id="msgLabel">💬 Updates & Logs</span></div>
+        
+        <div id="msgContainer">
+            <div style="padding:8px; display:flex; justify-content:space-around; border-bottom:1px solid #334155;">
+                <span onclick="switchTab('updates')" id="tabUpdates" style="cursor:pointer; font-size:10px; color:var(--update-orange); font-weight:800;">UPDATES</span>
+                <span onclick="switchTab('activity')" id="tabActivity" style="cursor:pointer; font-size:10px; display:none; font-weight:800;">LOGS</span>
+            </div>
+            <div id="msgList"></div>
+            <div id="activityList" style="display:none;"></div>
+        </div>
+
+        <button onclick="location.reload()" style="background:#334155; color:white; border:none; padding:10px; border-radius:8px; margin-top:auto; cursor:pointer; font-weight:800;">Logout</button>
+    </nav>
+
+    <div class="main">
+        <header class="entry-card" id="headerBar">
+            <input type="text" id="name" placeholder="Client Name" style="flex:1; padding:10px; border-radius:8px; border:1px solid #374151; background:#1f2937; color:white;">
+            <input type="text" id="phone" placeholder="Phone" style="width:120px; padding:10px; border-radius:8px; border:1px solid #374151; background:#1f2937; color:white;">
+            <button class="btn-action" style="background:var(--brand); color:white; border:none; height:42px; padding:0 20px; font-weight:800;" onclick="addLead()">+ Add</button>
+            <button id="adminPostBtn" class="btn-action" style="display:none; height:42px; width:42px" onclick="postMessage()">📢</button>
+        </header>
+
+        <section class="content">
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr><th style="padding:12px; color:var(--text-muted); font-size:10px;">NAME</th><th style="padding:12px; color:var(--text-muted); font-size:10px;">PHONE</th><th style="width:140px; padding:12px; color:var(--text-muted); font-size:10px;">DATE</th><th style="padding:12px; color:var(--text-muted); font-size:10px;">STATUS</th><th style="width:120px; text-align:center; color:var(--text-muted); font-size:10px;">ACTIONS</th></tr>
+                    </thead>
+                    <tbody id="list"></tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+<script>
+    // CRITICAL: Replace YOUR_API_KEY with the one from Firebase Console -> Project Settings
+    const firebaseConfig = { 
+        apiKey: "YOUR_API_KEY", 
+        databaseURL: "https://crm-modular-1d7de-default-rtdb.firebaseio.com" 
+    };
+    
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const AUTH = { admin: { user: "admin", pass: "casa786" }, vamshi: { user: "vamshi", pass: "casa123" } };
+    let currentUserRole = "", currentUserName = "";
+
+    function checkLogin() {
+        if(firebaseConfig.apiKey === "YOUR_API_KEY") { alert("ERROR: Please set your Firebase API Key in the code!"); return; }
+        const u = document.getElementById('u_name').value, p = document.getElementById('u_pass').value;
+        if(u === AUTH.admin.user && p === AUTH.admin.pass) { 
+            currentUserRole = "admin"; currentUserName = "Admin";
+            document.getElementById('adminPostBtn').style.display = 'flex'; 
+            document.getElementById('tabActivity').style.display = 'block';
+        }
+        else if(u === AUTH.vamshi.user && p === AUTH.vamshi.pass) { currentUserRole = "vamshi"; currentUserName = "Vamshi"; }
+        else { document.getElementById('loginError').style.display = 'block'; return; }
+        document.getElementById('loginOverlay').style.display = 'none';
+        initApp();
+    }
+
+    const STAGES = ["New Lead", "Follow Up", "Quoted", "Interested", "Finished", "Dropped"];
+    let currentFilter = 'ALL';
+
+    function initApp() {
+        STAGES.forEach((s, i) => { 
+            document.getElementById('sidebarStages').innerHTML += `<div class="nav-item" onclick="setFilter('${i}', this)"><span>${s}</span><span id="c-${i}">0</span></div>`; 
+        });
+        
+        db.ref('updates').on('value', snap => {
+            const list = document.getElementById('msgList'); list.innerHTML = '';
+            if(snap.val()) {
+                Object.entries(snap.val()).reverse().forEach(([k, m]) => {
+                    list.innerHTML += `<div class="msg-line"><span>${m.text}</span><br><small class="msg-time">${m.time}</small></div>`;
+                });
+            }
+        });
+        render();
+    }
+
+    function setFilter(v, el) { 
+        currentFilter = v; 
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        el.classList.add('active'); 
+        render(); 
+    }
+
+    function addLead() {
+        const n = document.getElementById('name').value;
+        if(!n) return;
+        db.ref('leads').push({ name: n, phone: document.getElementById('phone').value, status: 0, fDate: '' });
+        document.getElementById('name').value = ''; document.getElementById('phone').value = '';
+    }
+
+    function render() {
+        db.ref('leads').on('value', snap => {
+            const data = snap.val(), body = document.getElementById('list');
+            body.innerHTML = '';
+            if(data) {
+                Object.keys(data).reverse().forEach(k => {
+                    const x = data[k];
+                    if(currentFilter === 'ALL' || x.status.toString() === currentFilter) {
+                        body.innerHTML += `<tr>
+                            <td style="font-weight:800">${x.name}</td>
+                            <td>${x.phone}</td>
+                            <td class="td-date"><input type="date" value="${x.fDate}" class="date-input" onchange="db.ref('leads/${k}').update({fDate:this.value})"></td>
+                            <td><span class="status-badge s-${x.status}" onclick="db.ref('leads/${k}').update({status:(x.status+1)%6})">${STAGES[x.status]}</span></td>
+                            <td><div class="action-cell">
+                                <button class="btn-action" onclick="alert('History logged')">📄</button>
+                                <button class="btn-action" style="color:#f87171; border-color:#f87171;" onclick="db.ref('leads/${k}').remove()">🗑️</button>
+                            </div></td>
+                        </tr>`;
+                    }
+                });
+            }
+        });
+    }
+
+    function toggleMessages() { 
+        const c = document.getElementById('msgContainer');
+        c.style.display = c.style.display === 'none' ? 'flex' : 'none';
+    }
+
+    function switchTab(t) {
+        document.getElementById('msgList').style.display = t === 'updates' ? 'block' : 'none';
+        document.getElementById('activityList').style.display = t === 'activity' ? 'block' : 'none';
+    }
+
+    function postMessage() {
+        const t = prompt("Update:");
+        if(t) db.ref('updates').push({ text: t, time: new Date().toLocaleTimeString() });
+    }
+</script>
+</body>
+</html>
