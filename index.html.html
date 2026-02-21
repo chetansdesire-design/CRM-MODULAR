@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URBAN CASA - Elite CRM v8.2</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
+
+    <style>
+        :root {
+            --brand: #2563eb; --brand-hover: #1d4ed8; --brand-light: #60a5fa;
+            --bg: #0f172a; --panel: #1e293b; --text-main: #ffffff; 
+            --text-muted: #94a3b8; --border-clr: #334155;
+            --update-orange: #f59e0b; 
+        }
+
+        * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: var(--bg); color: var(--text-main); margin: 0; display: flex; height: 100vh; overflow: hidden; }
+
+        /* SIDEBAR & LOGO */
+        .sidebar { width: 210px; background: #020617; border-right: 1px solid var(--border-clr); padding: 24px 12px; display: flex; flex-direction: column; overflow-y: auto; }
+        .logo-main { font-size: 18px; font-weight: 800; color: #fff; text-transform: uppercase; margin: 0; text-align: center; }
+        .tagline-row { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 20px; }
+        .logo-tagline { font-size: 9px; font-weight: 600; color: var(--brand-light); letter-spacing: 1px; text-transform: uppercase; }
+        .v-badge { background: var(--border-clr); color: var(--text-muted); font-size: 8px; padding: 1px 4px; border-radius: 4px; font-weight: 800; }
+
+        /* INLINE UPDATES PANEL */
+        #msgContainer { 
+            background: rgba(0,0,0,0.3); 
+            border: 1px solid var(--update-orange); 
+            border-radius: 8px;
+            margin-top: 10px; 
+            display: none; 
+            flex-direction: column;
+            max-height: 300px;
+        }
+        #msgHeader { padding: 8px; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; }
+        #msgList, #activityList { padding: 8px; overflow-y: auto; font-size: 11px; }
+        .msg-line { margin-bottom: 8px; padding-left: 6px; border-left: 2px solid var(--update-orange); display: flex; flex-direction: column; gap: 2px; position: relative; }
+        .msg-time { font-size: 9px; color: var(--text-muted); }
+        .delete-msg { position: absolute; right: 0; top: 0; color: #f87171; cursor: pointer; font-size: 14px; }
+
+        /* MAIN LAYOUT */
+        .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .entry-card { padding: 20px 24px; background: #111827; border-bottom: 2px solid var(--brand); display: flex; gap: 10px; align-items: flex-end; }
+        .field-box { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+        .field-box label { font-size: 9px; font-weight: 800; color: #fff; text-transform: uppercase; background: var(--brand); width: fit-content; padding: 2px 6px; border-radius: 4px; }
+        .field-box input { background: #1f2937; border: 1px solid #374151; border-radius: 8px; padding: 10px; color: white; font-size: 13px; outline: none; }
+        
+        #searchWrapper { display: none; }
+        .search-active #searchWrapper { display: flex; }
+
+        /* TABLE ACTIONS */
+        .content { flex: 1; padding: 20px; overflow-y: auto; }
+        .table-wrap { border-radius: 12px; border: 1px solid var(--border-clr); background: #0f172a; overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        th { background: #1e293b; padding: 12px; text-align: left; font-size: 10px; color: var(--text-muted); text-transform: uppercase; }
+        td { padding: 12px; border-bottom: 1px solid #1e293b; font-size: 13px; color: #e2e8f0; vertical-align: middle; }
+        
+        .td-date { padding: 0 !important; position: relative; } 
+        .date-input { background: transparent; border: none; color: #fff; padding: 12px; font-size: 12px; width: 100%; height: 100%; cursor: pointer; display: block; outline: none; }
+        .date-input::-webkit-calendar-picker-indicator { position: absolute; right: 10px; filter: invert(1); cursor: pointer; }
+
+        .action-cell { display: flex; gap: 6px; justify-content: center; }
+        .btn-action { 
+            background: rgba(245, 158, 11, 0.1); border: 1px solid var(--update-orange); color: var(--update-orange); 
+            width: 30px; height: 30px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s;
+        }
+        .btn-action:hover { background: var(--update-orange); color: #000; }
+        .btn-del { border-color: #f87171; color: #f87171; background: rgba(248, 113, 113, 0.1); }
+        .btn-del:hover { background: #f87171; color: #fff; }
+
+        /* NAV ITEMS */
+        .nav-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 2px; }
+        .nav-item.active { background: var(--brand); color: #fff; }
+        .count-pill { font-size: 9px; background: rgba(255,255,255,0.1); padding: 1px 6px; border-radius: 20px; }
+        .btn-add { background: var(--brand); color: #fff; border: none; padding: 0 15px; border-radius: 8px; font-weight: 800; cursor: pointer; height: 42px; text-transform: uppercase; font-size: 12px; }
+        .status-badge { padding: 5px; border-radius: 6px; font-size: 9px; font-weight: 800; text-align: center; cursor: pointer; display: block; text-transform: uppercase; }
+        .s-0 { background: rgba(52, 211, 153, 0.1); color: #34d399; }
+        .s-4 { background: #ffffff; color: #000; }
+        .s-5 { background: rgba(239, 68, 68, 0.1); color: #f87171; }
+        .blink-notif { animation: blinker 1s linear infinite; color: var(--update-orange) !important; font-weight: 800; }
+        @keyframes blinker { 50% { opacity: 0.3; } }
+        
+        #loginOverlay { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+        .login-card { background: var(--panel); padding: 40px; border-radius: 16px; border: 1px solid var(--border-clr); width: 320px; text-align: center; }
+        .login-card input { width: 100%; padding: 12px; margin: 10px 0; background: #0f172a; border: 1px solid var(--border-clr); color: white; border-radius: 8px; outline: none; }
+    </style>
+</head>
+<body>
+
+    <div id="loginOverlay">
+        <div class="login-card">
+            <h2 style="margin-top:0">URBAN CASA</h2>
+            <input type="text" id="u_name" placeholder="Username">
+            <input type="password" id="u_pass" placeholder="Password">
+            <button class="btn-add" style="width:100%" onclick="checkLogin()">Access CRM</button>
+            <p id="loginError" style="color:#f87171; font-size:12px; margin-top:15px; display:none;">Invalid Credentials</p>
+        </div>
+    </div>
+
+    <nav class="sidebar">
+        <div class="logo-container">
+            <h1 class="logo-main">URBAN CASA</h1>
+            <div class="tagline-row"><span class="logo-tagline">Elite CRM</span><span class="v-badge">v8.2</span></div>
+        </div>
+        
+        <div class="nav-item active" onclick="setFilter('ALL', this)"><span>All Database</span><span class="count-pill" id="c-all">0</span></div>
+        <div id="sidebarStages"></div>
+        <div class="nav-item" onclick="setFilter('TODAY', this)" style="color:#34d399"><span>📅 Today</span><span class="count-pill" id="c-today">0</span></div>
+        <div class="nav-item" onclick="setFilter('OVERDUE', this)" style="color:#f87171"><span>⚠️ Overdue</span><span class="count-pill" id="c-overdue">0</span></div>
+        
+        <div class="nav-item" id="msgNotif" onclick="toggleMessages()" style="margin-top:15px; border:1px solid var(--update-orange)"><span id="msgLabel">💬 Updates & Logs</span></div>
+        
+        <div id="msgContainer">
+            <div id="msgHeader">
+                <span id="tabUpdates" style="font-size: 9px; font-weight: 800; color: var(--update-orange); cursor:pointer;" onclick="switchTab('updates')">UPDATES</span>
+                <span id="tabActivity" style="font-size: 9px; font-weight: 800; color: var(--text-muted); cursor:pointer; display:none;" onclick="switchTab('activity')">LOGS</span>
+                <button id="clearAllBtn" style="display:none; background:none; border:none; color: #ef4444; font-size: 14px; cursor: pointer;" onclick="clearAllUpdates()">🗑️</button>
+            </div>
+            <div id="msgList"></div>
+            <div id="activityList" style="display:none;"></div>
+        </div>
+
+        <button class="btn-add" style="background:#334155; margin-top: auto;" onclick="location.reload()">Logout</button>
+    </nav>
+
+    <div class="main">
+        <header class="entry-card" id="headerBar">
+            <div class="field-box"><label>Client Name</label><input type="text" id="name" placeholder="Name" onblur="applyProperCase(this)"></div>
+            <div class="field-box"><label>Phone</label><input type="text" id="phone" placeholder="No."></div>
+            <div class="field-box"><label>Location</label><input type="text" id="loc" placeholder="Area" onblur="applyProperCase(this)"></div>
+            <div class="field-box"><label>Requirement</label><input type="text" id="req" placeholder="Task" onblur="applyProperCase(this)"></div>
+            <div class="field-box" id="searchWrapper"><label style="background:var(--update-orange)">Search</label><input type="text" id="globalSearch" placeholder="Name/No..." onkeyup="render()"></div>
+            
+            <button class="btn-add" onclick="addLead()">+ Add</button>
+            <div style="display: flex; gap: 6px;">
+                <button id="adminPostBtn" class="btn-action" style="display:none; height:42px; width:42px" onclick="postMessage()" title="Post Update">📢</button>
+                <button class="btn-action" style="height:42px; width:42px; border-color:var(--brand); color:var(--brand); background:transparent" onclick="toggleSearch()" title="Search Database">🔍</button>
+            </div>
+        </header>
+
+        <section class="content">
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr><th>Client Name</th><th>Client No.</th><th>Location</th><th>Requirement</th><th style="width:130px;">Next Call</th><th>Status</th><th style="width:130px; text-align:center;">Actions</th></tr>
+                    </thead>
+                    <tbody id="list"></tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+<script>
+    const AUTH = { admin: { user: "admin", pass: "casa786" }, vamshi: { user: "vamshi", pass: "casa123" } };
+    let currentUserRole = "", currentUserName = "";
+
+    // IMPORTANT: Replace with your actual Firebase API Key
+    const firebaseConfig = { apiKey: "YOUR_API_KEY", databaseURL: "https://crm-modular-1d7de-default-rtdb.firebaseio.com" };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    function applyProperCase(i) { i.value = i.value.toLowerCase().replace(/\b\w/g, c => c.toUpperCase()); }
+    function toggleSearch() { document.getElementById('headerBar').classList.toggle('search-active'); }
+
+    function checkLogin() {
+        const u = document.getElementById('u_name').value, p = document.getElementById('u_pass').value;
+        if(u === AUTH.admin.user && p === AUTH.admin.pass) { 
+            currentUserRole = "admin"; currentUserName = "Admin";
+            document.getElementById('adminPostBtn').style.display = 'flex'; 
+            document.getElementById('clearAllBtn').style.display = 'block';
+            document.getElementById('tabActivity').style.display = 'block';
+        }
+        else if(u === AUTH.vamshi.user && p === AUTH.vamshi.pass) { currentUserRole = "vamshi"; currentUserName = "Vamshi"; }
+        else { document.getElementById('loginError').style.display = 'block'; return; }
+        document.getElementById('loginOverlay').style.display = 'none';
+        initApp();
+    }
+
+    function logActivity(action) { db.ref('activity_logs').push({ user: currentUserName, action: action, time: new Date().toLocaleString() }); }
+
+    function switchTab(t) {
+        document.getElementById('msgList').style.display = t === 'updates' ? 'block' : 'none';
+        document.getElementById('activityList').style.display = t === 'activity' ? 'block' : 'none';
+        document.getElementById('tabUpdates').style.color = t === 'updates' ? 'var(--update-orange)' : 'var(--text-muted)';
+        document.getElementById('tabActivity').style.color = t === 'activity' ? 'var(--update-orange)' : 'var(--text-muted)';
+    }
+
+    function toggleMessages() { 
+        const c = document.getElementById('msgContainer');
+        c.style.display = c.style.display === 'none' ? 'flex' : 'none';
+        document.getElementById('msgLabel').classList.remove('blink-notif');
+    }
+
+    function postMessage() {
+        const t = prompt("Enter update:");
+        if(t) { db.ref('updates').push({ text: t, time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) }); logActivity(`Posted: ${t}`); }
+    }
+
+    const STAGES = ["New Lead", "Follow Up", "Quoted", "Interested", "Finished", "Dropped"];
+    let currentFilter = 'ALL';
+
+    function initApp() {
+        document.getElementById('sidebarStages').innerHTML = ''; // Clear existing
+        STAGES.forEach((s, i) => { 
+            document.getElementById('sidebarStages').innerHTML += `<div class="nav-item" onclick="setFilter('${i}', this)"><span>${s}</span><span class="count-pill" id="c-${i}">0</span></div>`; 
+        });
+        
+        db.ref('updates').on('value', snap => {
+            const list = document.getElementById('msgList'); list.innerHTML = '';
+            if(snap.val()) {
+                Object.entries(snap.val()).reverse().forEach(([k, m]) => {
+                    list.innerHTML += `<div class="msg-line"><span>${m.text}</span><span class="msg-time">${m.time}</span><span class="delete-msg" onclick="db.ref('updates').child('${k}').remove()">×</span></div>`;
+                });
+                if(currentUserRole === "vamshi") document.getElementById('msgLabel').classList.add('blink-notif');
+            }
+        });
+
+        if(currentUserRole === "admin") {
+            db.ref('activity_logs').limitToLast(30).on('value', snap => {
+                const list = document.getElementById('activityList'); list.innerHTML = '';
+                if(snap.val()) Object.values(snap.val()).reverse().forEach(l => {
+                    list.innerHTML += `<div style="margin-bottom:6px; border-bottom:1px solid #1e293b; padding-bottom:2px;"><span class="msg-time">${l.time}</span><br><b style="color:#fff">${l.user}:</b> ${l.action}</div>`;
+                });
+            });
+        }
+        render();
+    }
+
+    function setFilter(v, el) { 
+        currentFilter = v; 
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        el.classList.add('active'); 
+        render(); 
+    }
+
+    function addLead() {
+        const n = document.getElementById('name'); if(!n.value) return;
+        db.ref('leads').push({ name: n.value, phone: document.getElementById('phone').value, loc: document.getElementById('loc').value, req: document.getElementById('req').value, fDate: '', status: 0, logs: [] });
+        logActivity(`Added Lead: ${n.value}`);
+        ['name','phone','loc','req'].forEach(id => document.getElementById(id).value = '');
+    }
+
+    function render() {
+        db.ref('leads').on('value', snap => {
+            const data = snap.val(), body = document.getElementById('list'), today = new Date().toISOString().split('T')[0];
+            const search = document.getElementById('globalSearch').value.toLowerCase();
+            body.innerHTML = ''; 
+            let c = { all:0, 0:0, 1:0, 2:0, 3:0, 4:0, 5:0, today:0, overdue:0 };
+            
+            if(data) Object.keys(data).reverse().forEach(k => {
+                const x = data[k]; 
+                c.all++; 
+                c[x.status]++;
+                
+                if(x.fDate === today) c.today++; 
+                if(x.fDate && x.fDate < today && x.status != 4) c.overdue++;
+                
+                let show = ((currentFilter === 'ALL') || 
+                           (currentFilter === 'TODAY' && x.fDate === today) || 
+                           (currentFilter === 'OVERDUE' && x.fDate && x.fDate < today) || 
+                           (x.status.toString() === currentFilter)) && 
+                           (x.name.toLowerCase().includes(search) || x.phone.includes(search));
+                
+                if(show) {
+                    const lData = JSON.stringify(x.logs || []);
+                    const dBtn = (currentUserRole === "admin") ? `<button class="btn-action btn-del" onclick="if(confirm('Delete?')){db.ref('leads/${k}').remove(); logActivity('Deleted lead: ${x.name}');}" title="Delete">🗑️</button>` : '';
+                    
+                    body.innerHTML += `<tr>
+                        <td style="font-weight:700;">${x.name}</td>
+                        <td>${x.phone}</td>
+                        <td>${x.loc}</td>
+                        <td>${x.req}</td>
+                        <td class="td-date"><input type="date" value="${x.fDate||''}" class="date-input" onchange="db.ref('leads/${k}').update({fDate:this.value}); logActivity('Changed date of ${x.name}')"></td>
+                        <td>
+                            <span class="status-badge s-${x.status}" 
+                                  onclick="const nextS = (${x.status} + 1) % 6; db.ref('leads/${k}').update({status: nextS}); logActivity('Status update for ${x.name}')">
+                                ${STAGES[x.status]}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-cell">
+                                <button class="btn-action" onclick='addLog("${k}",${lData},"${x.name}")' title="Add Note">🕒</button>
+                                <button class="btn-action" onclick='alert("HISTORY:\\n"+${lData}.join("\\n"))' title="View History">📄</button>
+                                ${dBtn}
+                            </div>
+                        </td>
+                    </tr>`;
+                }
+            });
+            Object.keys(c).forEach(k => { if(document.getElementById('c-'+k)) document.getElementById('c-'+k).innerText = c[k]; });
+        });
+    }
+
+    function addLog(k, cur, name) {
+        const n = prompt("Enter Note:"); if(!n) return;
+        const u = cur || []; u.push(`${new Date().toLocaleString()}: ${n}`);
+        db.ref('leads/'+k).update({ logs: u }); logActivity(`Added note for ${name}`);
+    }
+
+    function clearAllUpdates() {
+        if(confirm("Clear all updates?")) {
+            db.ref('updates').remove();
+            logActivity("Cleared all message updates");
+        }
+    }
+</script>
+</body>
+</html>
