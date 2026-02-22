@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>URBAN CASA - Elite CRM v8.2</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
         :root {
@@ -48,8 +50,11 @@
         td { padding: 12px; border-bottom: 1px solid #1e293b; font-size: 13px; color: #e2e8f0; vertical-align: middle; }
         
         .td-date { padding: 0 !important; position: relative; } 
-        .date-input { background: transparent; border: none; color: #fff; padding: 12px; font-size: 12px; width: 100%; height: 100%; cursor: pointer; display: block; outline: none; }
+        .date-input { background: transparent; border: none; color: #fff; padding: 12px; font-size: 12px; width: 100%; height: 100%; cursor: pointer; display: block; outline: none; font-weight: 600; }
         .date-input::-webkit-calendar-picker-indicator { position: absolute; right: 10px; filter: invert(1); cursor: pointer; }
+
+        .date-overdue { color: #f87171 !important; font-weight: 800; }
+        .date-today { color: #34d399 !important; font-weight: 800; }
 
         .action-cell { display: flex; gap: 6px; justify-content: center; }
         .btn-action { background: rgba(245, 158, 11, 0.1); border: 1px solid var(--update-orange); color: var(--update-orange); width: 30px; height: 30px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
@@ -60,21 +65,19 @@
         .nav-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 2px; }
         .nav-item.active { background: var(--brand); color: #fff; }
         .count-pill { font-size: 9px; background: rgba(255,255,255,0.1); padding: 1px 6px; border-radius: 20px; }
+        
         .btn-add { background: var(--brand); color: #fff; border: none; padding: 0 15px; border-radius: 8px; font-weight: 800; cursor: pointer; height: 42px; text-transform: uppercase; font-size: 12px; }
+        .btn-secondary { background: #334155; color: #fff; border: none; padding: 8px; border-radius: 6px; font-size: 9px; cursor: pointer; text-transform: uppercase; font-weight: 800; flex: 1; }
         
-        /* UPDATED STATUS STYLING */
         .status-badge { padding: 5px; border-radius: 6px; font-size: 9px; font-weight: 800; text-align: center; cursor: pointer; display: block; text-transform: uppercase; }
-        .s-0 { background: rgba(52, 211, 153, 0.1); color: #34d399; } /* New Lead - Green */
-        .s-1 { background: rgba(96, 165, 250, 0.1); color: #60a5fa; } /* Follow Up - Blue */
-        .s-2 { background: rgba(245, 158, 11, 0.1); color: #f59e0b; } /* Quoted - Orange */
-        .s-3 { background: rgba(167, 139, 250, 0.1); color: #a78bfa; } /* Interested - Purple */
-        .s-4 { background: rgba(254, 240, 138, 0.2); color: #facc15; } /* In Progress - Yellow (Moved Below Interested) */
-        .s-5 { background: #ffffff; color: #000; }                   /* Finished - White */
-        .s-6 { background: rgba(239, 68, 68, 0.1); color: #f87171; } /* Dropped - Red */
+        .s-0 { background: rgba(52, 211, 153, 0.1); color: #34d399; } 
+        .s-1 { background: rgba(96, 165, 250, 0.1); color: #60a5fa; } 
+        .s-2 { background: rgba(245, 158, 11, 0.1); color: #f59e0b; } 
+        .s-3 { background: rgba(167, 139, 250, 0.1); color: #a78bfa; } 
+        .s-4 { background: rgba(254, 240, 138, 0.2); color: #facc15; } 
+        .s-5 { background: #ffffff; color: #000; } 
+        .s-6 { background: rgba(239, 68, 68, 0.1); color: #f87171; } 
 
-        .blink-notif { animation: blinker 1s linear infinite; color: var(--update-orange) !important; font-weight: 800; }
-        @keyframes blinker { 50% { opacity: 0.3; } }
-        
         #loginOverlay { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: flex; align-items: center; justify-content: center; flex-direction: column; }
         .login-card { background: var(--panel); padding: 40px; border-radius: 16px; border: 1px solid var(--border-clr); width: 320px; text-align: center; }
         .login-card input { width: 100%; padding: 12px; margin: 10px 0; background: #0f172a; border: 1px solid var(--border-clr); color: white; border-radius: 8px; outline: none; }
@@ -114,7 +117,13 @@
             <div id="msgList"></div>
             <div id="activityList" style="display:none;"></div>
         </div>
-        <button class="btn-add" style="background:#334155; margin-top: auto;" onclick="location.reload()">Logout</button>
+
+        <div style="display:flex; gap:5px; margin-top: auto; padding: 10px 0;">
+            <button class="btn-secondary" onclick="exportToExcel()">📊 Export</button>
+            <button class="btn-secondary" onclick="document.getElementById('excelFile').click()">📥 Import</button>
+            <input type="file" id="excelFile" style="display:none" accept=".xlsx, .xls" onchange="importFromExcel(event)">
+        </div>
+        <button class="btn-add" style="background:#334155;" onclick="location.reload()">Logout</button>
     </nav>
 
     <div class="main">
@@ -148,9 +157,13 @@
     const AUTH = { admin: { user: "admin", pass: "casa786" }, vamshi: { user: "vamshi", pass: "casa123" } };
     let currentUserRole = "", currentUserName = "";
 
+    // IMPORTANT: Replace with your actual Firebase config
     const firebaseConfig = { apiKey: "YOUR_API_KEY", databaseURL: "https://crm-modular-1d7de-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+
+    const STAGES = ["New Lead", "Follow Up", "Quoted", "Interested", "In Progress", "Finished", "Dropped"];
+    let currentFilter = 'ALL';
 
     function applyProperCase(i) { i.value = i.value.toLowerCase().replace(/\b\w/g, c => c.toUpperCase()); }
     function toggleSearch() { document.getElementById('headerBar').classList.toggle('search-active'); }
@@ -162,36 +175,16 @@
             document.getElementById('adminPostBtn').style.display = 'flex'; 
             document.getElementById('clearAllBtn').style.display = 'block';
             document.getElementById('tabActivity').style.display = 'block';
+        } else if(u === AUTH.vamshi.user && p === AUTH.vamshi.pass) { 
+            currentUserRole = "vamshi"; currentUserName = "Vamshi"; 
+        } else { 
+            document.getElementById('loginError').style.display = 'block'; return; 
         }
-        else if(u === AUTH.vamshi.user && p === AUTH.vamshi.pass) { currentUserRole = "vamshi"; currentUserName = "Vamshi"; }
-        else { document.getElementById('loginError').style.display = 'block'; return; }
         document.getElementById('loginOverlay').style.display = 'none';
         initApp();
     }
 
     function logActivity(action) { db.ref('activity_logs').push({ user: currentUserName, action: action, time: new Date().toLocaleString() }); }
-
-    function switchTab(t) {
-        document.getElementById('msgList').style.display = t === 'updates' ? 'block' : 'none';
-        document.getElementById('activityList').style.display = t === 'activity' ? 'block' : 'none';
-        document.getElementById('tabUpdates').style.color = t === 'updates' ? 'var(--update-orange)' : 'var(--text-muted)';
-        document.getElementById('tabActivity').style.color = t === 'activity' ? 'var(--update-orange)' : 'var(--text-muted)';
-    }
-
-    function toggleMessages() { 
-        const c = document.getElementById('msgContainer');
-        c.style.display = c.style.display === 'none' ? 'flex' : 'none';
-        document.getElementById('msgLabel').classList.remove('blink-notif');
-    }
-
-    function postMessage() {
-        const t = prompt("Enter update:");
-        if(t) { db.ref('updates').push({ text: t, time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) }); logActivity(`Posted: ${t}`); }
-    }
-
-    // UPDATED SEQUENCE
-    const STAGES = ["New Lead", "Follow Up", "Quoted", "Interested", "In Progress", "Finished", "Dropped"];
-    let currentFilter = 'ALL';
 
     function initApp() {
         const stageContainer = document.getElementById('sidebarStages');
@@ -206,7 +199,6 @@
                 Object.entries(snap.val()).reverse().forEach(([k, m]) => {
                     list.innerHTML += `<div class="msg-line"><span>${m.text}</span><span class="msg-time">${m.time}</span><span class="delete-msg" onclick="db.ref('updates').child('${k}').remove()">×</span></div>`;
                 });
-                if(currentUserRole === "vamshi") document.getElementById('msgLabel').classList.add('blink-notif');
             }
         });
 
@@ -252,17 +244,36 @@
                 let show = ((currentFilter === 'ALL') || (currentFilter === 'TODAY' && x.fDate === today) || (currentFilter === 'OVERDUE' && x.fDate && x.fDate < today) || (x.status.toString() === currentFilter)) && (x.name.toLowerCase().includes(search) || x.phone.includes(search));
                 
                 if(show) {
-                    const lData = JSON.stringify(x.logs || []);
+                    const lRaw = x.logs || [];
+                    const lData = JSON.stringify(lRaw).replace(/'/g, "&apos;");
                     const dBtn = (currentUserRole === "admin") ? `<button class="btn-action btn-del" onclick="if(confirm('Delete?')){db.ref('leads/${k}').remove(); logActivity('Deleted lead: ${x.name}');}" title="Delete">🗑️</button>` : '';
-                    body.innerHTML += `<tr><td style="font-weight:700;">${x.name}</td><td>${x.phone}</td><td>${x.loc}</td><td>${x.req}</td>
-                    <td class="td-date"><input type="date" value="${x.fDate||''}" class="date-input" onchange="db.ref('leads/${k}').update({fDate:this.value}); logActivity('Changed date of ${x.name}')"></td>
-                    <td><span class="status-badge s-${x.status}" onclick="const nxt = (${x.status}+1)%7; db.ref('leads/${k}').update({status:nxt}); logActivity('Status update for ${x.name}')">${STAGES[x.status]}</span></td>
-                    <td><div class="action-cell"><button class="btn-action" onclick='addLog("${k}",${lData},"${x.name}")' title="Add Note">🕒</button><button class="btn-action" onclick='alert("HISTORY:\\n"+${lData}.join("\\n"))' title="View History">📄</button>${dBtn}</div></td></tr>`;
+                    const isOverdue = (x.fDate && x.fDate < today && x.status != 5);
+                    const dateClass = isOverdue ? 'date-overdue' : (x.fDate === today ? 'date-today' : '');
+
+                    // WhatsApp Logic
+                    const cleanPhone = x.phone ? x.phone.replace(/\D/g, '') : '';
+                    const waLink = cleanPhone ? `https://wa.me/${cleanPhone.length <= 10 ? '91'+cleanPhone : cleanPhone}` : '#';
+
+                    body.innerHTML += `<tr>
+                        <td style="font-weight:700;">${x.name}</td>
+                        <td>
+                            <a href="${waLink}" target="_blank" style="color: inherit; text-decoration: none; display: flex; align-items: center; gap: 4px;">
+                                ${x.phone} <span style="font-size: 10px; opacity: 0.6; color: #22c55e;">●</span>
+                            </a>
+                        </td>
+                        <td>${x.loc}</td>
+                        <td>${x.req}</td>
+                        <td class="td-date"><input type="date" value="${x.fDate||''}" class="date-input ${dateClass}" onchange="db.ref('leads/${k}').update({fDate:this.value}); logActivity('Changed date of ${x.name}')"></td>
+                        <td><span class="status-badge s-${x.status}" onclick="const nxt = (${x.status}+1)%7; db.ref('leads/${k}').update({status:nxt}); logActivity('Status update for ${x.name}')">${STAGES[x.status]}</span></td>
+                        <td><div class="action-cell"><button class="btn-action" onclick='addLog("${k}",${lData},"${x.name}")' title="Add Note">🕒</button><button class="btn-action" onclick='viewHistory(${lData})' title="View History">📄</button>${dBtn}</div></td>
+                    </tr>`;
                 }
             });
             Object.keys(c).forEach(k => { if(document.getElementById('c-'+k)) document.getElementById('c-'+k).innerText = c[k]; });
         });
     }
+
+    function viewHistory(logs) { alert("HISTORY:\n" + logs.join("\n")); }
 
     function addLog(k, cur, name) {
         const n = prompt("Enter Note:"); if(!n) return;
@@ -270,7 +281,58 @@
         db.ref('leads/'+k).update({ logs: u }); logActivity(`Added note for ${name}`);
     }
 
-    function clearAllUpdates() { if(confirm("Clear all?")) db.ref('updates').remove(); }
+    function exportToExcel() {
+        db.ref('leads').once('value', snap => {
+            const data = snap.val(); if(!data) return alert("No data to export");
+            const rows = Object.values(data).map(x => ({
+                Name: x.name, Phone: x.phone, Location: x.loc, Requirement: x.req, Next_Call: x.fDate, Status: STAGES[x.status], Notes: (x.logs || []).join(" | ")
+            }));
+            const ws = XLSX.utils.json_to_sheet(rows);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Leads");
+            XLSX.writeFile(wb, `UrbanCasa_Backup_${new Date().toISOString().split('T')[0]}.xlsx`);
+            logActivity("Exported data to Excel");
+        });
+    }
+
+    function importFromExcel(e) {
+        const file = e.target.files[0]; if(!file) return;
+        if(!confirm("This will append these leads to your current database. Continue?")) return;
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+            const bstr = evt.target.result;
+            const wb = XLSX.read(bstr, {type:'binary'});
+            const ws = wb.Sheets[wb.SheetNames[0]];
+            const data = XLSX.utils.sheet_to_json(ws);
+            data.forEach(r => {
+                let sIdx = STAGES.indexOf(r.Status);
+                db.ref('leads').push({
+                    name: r.Name||'', phone: r.Phone||'', loc: r.Location||'', req: r.Requirement||'',
+                    fDate: r.Next_Call||'', status: sIdx === -1 ? 0 : sIdx, logs: r.Notes ? r.Notes.split(" | ") : []
+                });
+            });
+            alert("Successfully imported " + data.length + " leads.");
+            logActivity(`Imported ${data.length} leads from Excel`);
+        };
+        reader.readAsBinaryString(file);
+    }
+
+    function toggleMessages() { 
+        const c = document.getElementById('msgContainer');
+        c.style.display = c.style.display === 'none' ? 'flex' : 'none';
+    }
+
+    function postMessage() {
+        const t = prompt("Enter update:");
+        if(t) { db.ref('updates').push({ text: t, time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) }); logActivity(`Posted: ${t}`); }
+    }
+
+    function switchTab(t) {
+        document.getElementById('msgList').style.display = t === 'updates' ? 'block' : 'none';
+        document.getElementById('activityList').style.display = t === 'activity' ? 'block' : 'none';
+    }
+
+    function clearAllUpdates() { if(confirm("Clear all updates?")) db.ref('updates').remove(); }
 </script>
 </body>
 </html>
