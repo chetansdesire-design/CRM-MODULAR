@@ -27,6 +27,18 @@
         .logo-tagline { font-size: 9px; font-weight: 600; color: var(--brand-light); letter-spacing: 1px; text-transform: uppercase; }
         .v-badge { background: var(--border-clr); color: var(--text-muted); font-size: 8px; padding: 1px 4px; border-radius: 4px; font-weight: 800; }
 
+        /* Notification Blinking Fix */
+        .notif-blink {
+            animation: notificationBlink 1.5s infinite;
+            border: 1px solid var(--update-orange) !important;
+        }
+
+        @keyframes notificationBlink {
+            0% { box-shadow: 0 0 0px var(--update-orange); background: transparent; }
+            50% { box-shadow: 0 0 12px var(--update-orange); background: rgba(245, 158, 11, 0.1); }
+            100% { box-shadow: 0 0 0px var(--update-orange); background: transparent; }
+        }
+
         #msgContainer { background: rgba(0,0,0,0.3); border: 1px solid var(--update-orange); border-radius: 8px; margin-top: 10px; display: none; flex-direction: column; max-height: 300px; }
         #msgHeader { padding: 8px; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; }
         #msgList, #activityList { padding: 8px; overflow-y: auto; font-size: 11px; }
@@ -157,7 +169,7 @@
     const AUTH = { admin: { user: "admin", pass: "casa786" }, vamshi: { user: "vamshi", pass: "casa123" } };
     let currentUserRole = "", currentUserName = "";
 
-    // IMPORTANT: Replace with your actual Firebase config
+    // DATA INTEGRITY: Firebase config remains unchanged
     const firebaseConfig = { apiKey: "YOUR_API_KEY", databaseURL: "https://crm-modular-1d7de-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
@@ -193,12 +205,18 @@
             stageContainer.innerHTML += `<div class="nav-item" onclick="setFilter('${i}', this)"><span>${s}</span><span class="count-pill" id="c-${i}">0</span></div>`; 
         });
         
+        // FIX: Added blink activation to the listener
         db.ref('updates').on('value', snap => {
             const list = document.getElementById('msgList'); list.innerHTML = '';
+            const msgBtn = document.getElementById('msgNotif');
+            
             if(snap.val()) {
+                msgBtn.classList.add('notif-blink'); // Start blinking on new update
                 Object.entries(snap.val()).reverse().forEach(([k, m]) => {
                     list.innerHTML += `<div class="msg-line"><span>${m.text}</span><span class="msg-time">${m.time}</span><span class="delete-msg" onclick="db.ref('updates').child('${k}').remove()">×</span></div>`;
                 });
+            } else {
+                msgBtn.classList.remove('notif-blink');
             }
         });
 
@@ -250,7 +268,6 @@
                     const isOverdue = (x.fDate && x.fDate < today && x.status != 5);
                     const dateClass = isOverdue ? 'date-overdue' : (x.fDate === today ? 'date-today' : '');
 
-                    // WhatsApp Logic
                     const cleanPhone = x.phone ? x.phone.replace(/\D/g, '') : '';
                     const waLink = cleanPhone ? `https://wa.me/${cleanPhone.length <= 10 ? '91'+cleanPhone : cleanPhone}` : '#';
 
@@ -317,9 +334,15 @@
         reader.readAsBinaryString(file);
     }
 
+    // FIX: Remove blinking when the panel is opened
     function toggleMessages() { 
         const c = document.getElementById('msgContainer');
+        const msgBtn = document.getElementById('msgNotif');
         c.style.display = c.style.display === 'none' ? 'flex' : 'none';
+        
+        if (c.style.display === 'flex') {
+            msgBtn.classList.remove('notif-blink');
+        }
     }
 
     function postMessage() {
