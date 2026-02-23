@@ -16,6 +16,7 @@
             --bg: #0f172a; --panel: #1e293b; --text-main: #ffffff; 
             --text-muted: #94a3b8; --border-clr: #334155;
             --update-orange: #f59e0b; 
+            --quote-purple: #8b5cf6;
         }
 
         * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -27,7 +28,6 @@
         .logo-tagline { font-size: 9px; font-weight: 600; color: var(--brand-light); letter-spacing: 1px; text-transform: uppercase; }
         .v-badge { background: var(--border-clr); color: var(--text-muted); font-size: 8px; padding: 1px 4px; border-radius: 4px; font-weight: 800; }
 
-        /* Notification Blinking Fix */
         .notif-blink {
             animation: notificationBlink 1.5s infinite;
             border: 1px solid var(--update-orange) !important;
@@ -130,12 +130,16 @@
             <div id="activityList" style="display:none;"></div>
         </div>
 
-        <div style="display:flex; gap:5px; margin-top: auto; padding: 10px 0;">
-            <button class="btn-secondary" onclick="exportToExcel()">📊 Export</button>
-            <button class="btn-secondary" onclick="document.getElementById('excelFile').click()">📥 Import</button>
-            <input type="file" id="excelFile" style="display:none" accept=".xlsx, .xls" onchange="importFromExcel(event)">
+        <div style="display:flex; flex-direction:column; gap:8px; margin-top: auto; padding: 10px 0;">
+            <button class="btn-add" style="background:var(--quote-purple); height: 38px;" onclick="window.open('https://chetansdesire-design.github.io/UC-Modular-Quotation/', '_blank')">📝 Make Quotation</button>
+            
+            <div style="display:flex; gap:5px;">
+                <button class="btn-secondary" onclick="exportToExcel()">📊 Export</button>
+                <button class="btn-secondary" onclick="document.getElementById('excelFile').click()">📥 Import</button>
+                <input type="file" id="excelFile" style="display:none" accept=".xlsx, .xls" onchange="importFromExcel(event)">
+            </div>
+            <button class="btn-add" style="background:#334155; height: 38px;" onclick="location.reload()">Logout</button>
         </div>
-        <button class="btn-add" style="background:#334155;" onclick="location.reload()">Logout</button>
     </nav>
 
     <div class="main">
@@ -169,7 +173,7 @@
     const AUTH = { admin: { user: "admin", pass: "casa786" }, vamshi: { user: "vamshi", pass: "casa123" } };
     let currentUserRole = "", currentUserName = "";
 
-    // DATA INTEGRITY: Firebase config remains unchanged
+    // IMPORTANT: Ensure you paste your Firebase apiKey below
     const firebaseConfig = { apiKey: "YOUR_API_KEY", databaseURL: "https://crm-modular-1d7de-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
@@ -205,13 +209,12 @@
             stageContainer.innerHTML += `<div class="nav-item" onclick="setFilter('${i}', this)"><span>${s}</span><span class="count-pill" id="c-${i}">0</span></div>`; 
         });
         
-        // FIX: Added blink activation to the listener
         db.ref('updates').on('value', snap => {
             const list = document.getElementById('msgList'); list.innerHTML = '';
             const msgBtn = document.getElementById('msgNotif');
             
             if(snap.val()) {
-                msgBtn.classList.add('notif-blink'); // Start blinking on new update
+                msgBtn.classList.add('notif-blink');
                 Object.entries(snap.val()).reverse().forEach(([k, m]) => {
                     list.innerHTML += `<div class="msg-line"><span>${m.text}</span><span class="msg-time">${m.time}</span><span class="delete-msg" onclick="db.ref('updates').child('${k}').remove()">×</span></div>`;
                 });
@@ -334,15 +337,11 @@
         reader.readAsBinaryString(file);
     }
 
-    // FIX: Remove blinking when the panel is opened
     function toggleMessages() { 
         const c = document.getElementById('msgContainer');
         const msgBtn = document.getElementById('msgNotif');
         c.style.display = c.style.display === 'none' ? 'flex' : 'none';
-        
-        if (c.style.display === 'flex') {
-            msgBtn.classList.remove('notif-blink');
-        }
+        if (c.style.display === 'flex') { msgBtn.classList.remove('notif-blink'); }
     }
 
     function postMessage() {
