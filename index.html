@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URBAN CASA - Elite CRM v8.2</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        :root { --brand: #2563eb; --bg: #0f172a; --panel: #1e293b; --text-main: #ffffff; --text-muted: #94a3b8; --border-clr: #334155; --update-orange: #f59e0b; --quote-purple: #8b5cf6; }
+        * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: var(--bg); color: var(--text-main); margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        .sidebar { width: 210px; background: #020617; border-right: 1px solid var(--border-clr); padding: 24px 12px; display: flex; flex-direction: column; overflow-y: auto; }
+        .logo-main { font-size: 18px; font-weight: 800; color: #fff; text-transform: uppercase; margin: 0; text-align: center; }
+        .tagline-row { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 20px; }
+        .v-badge { background: var(--border-clr); color: var(--text-muted); font-size: 8px; padding: 1px 4px; border-radius: 4px; font-weight: 800; }
+        .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .entry-card { padding: 20px 24px; background: #111827; border-bottom: 2px solid var(--brand); display: flex; gap: 10px; align-items: flex-end; }
+        .field-box { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+        .field-box label { font-size: 9px; font-weight: 800; color: #fff; text-transform: uppercase; background: var(--brand); width: fit-content; padding: 2px 6px; border-radius: 4px; }
+        .field-box input { background: #1f2937; border: 1px solid #374151; border-radius: 8px; padding: 10px; color: white; font-size: 13px; outline: none; }
+        .content { flex: 1; padding: 20px; overflow-y: auto; }
+        .table-wrap { border-radius: 12px; border: 1px solid var(--border-clr); background: #0f172a; overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #1e293b; padding: 12px; text-align: left; font-size: 10px; color: var(--text-muted); text-transform: uppercase; }
+        td { padding: 12px; border-bottom: 1px solid #1e293b; font-size: 13px; color: #e2e8f0; vertical-align: middle; }
+        .btn-add { background: var(--brand); color: #fff; border: none; padding: 0 15px; border-radius: 8px; font-weight: 800; cursor: pointer; height: 42px; text-transform: uppercase; font-size: 12px; transition: 0.2s; }
+        .btn-add:hover { opacity: 0.9; }
+        .btn-add:disabled { opacity: 0.5; cursor: not-allowed; }
+        .status-badge { padding: 5px; border-radius: 6px; font-size: 9px; font-weight: 800; text-align: center; cursor: pointer; display: block; text-transform: uppercase; }
+        .s-0 { background: rgba(52, 211, 153, 0.1); color: #34d399; } 
+        .s-5 { background: #ffffff; color: #000; } 
+        .s-6 { background: rgba(239, 68, 68, 0.1); color: #f87171; }
+        .date-overdue { color: #f87171 !important; font-weight: 800; }
+        .date-today { color: #34d399 !important; font-weight: 800; }
+        .date-input { background: transparent; border: none; color: inherit; font-family: inherit; font-size: 12px; cursor: pointer; outline: none; }
+        
+        #loginOverlay { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+        .login-card { background: var(--panel); padding: 40px; border-radius: 16px; border: 1px solid var(--border-clr); width: 320px; text-align: center; }
+        .login-card input { width: 100%; padding: 12px; margin: 10px 0; background: #0f172a; border: 1px solid var(--border-clr); color: white; border-radius: 8px; outline: none; text-align: center; letter-spacing: 2px; }
+        
+        .nav-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 2px; }
+        .nav-item.active { background: var(--brand); color: #fff; }
+        .count-pill { font-size: 9px; background: rgba(255,255,255,0.1); padding: 1px 6px; border-radius: 20px; }
+        .trash-btn { background: transparent; border: none; color: #f87171; cursor: pointer; font-size: 16px; }
+    </style>
+</head>
+<body>
+
+    <div id="loginOverlay">
+        <div class="login-card">
+            <h2 style="margin-top:0">URBAN CASA</h2>
+            <input type="password" id="u_pass" placeholder="Enter Access Code" onkeypress="if(event.key === 'Enter') checkLogin()">
+            <button class="btn-add" id="loginBtn" style="width:100%" onclick="checkLogin()" disabled>Connecting...</button>
+            <p id="loginError" style="color:#f87171; font-size:12px; margin-top:15px; display:none;">Invalid Code</p>
+        </div>
+    </div>
+
+    <nav class="sidebar">
+        <div class="logo-container"><h1 class="logo-main">URBAN CASA</h1><div class="tagline-row"><span class="v-badge">v8.2</span></div></div>
+        <div class="nav-item active" id="btn-all" onclick="setFilter('ALL', this)"><span>All Database</span><span class="count-pill" id="c-all">0</span></div>
+        <div id="sidebarStages"></div>
+        <div class="nav-item" id="btn-today" onclick="setFilter('TODAY', this)" style="color:#34d399"><span>📅 Today</span><span class="count-pill" id="c-today">0</span></div>
+        <div class="nav-item" id="btn-overdue" onclick="setFilter('OVERDUE', this)" style="color:#f87171"><span>⚠️ Overdue</span><span class="count-pill" id="c-overdue">0</span></div>
+        <div style="margin-top: auto; padding: 10px 0; display:flex; flex-direction:column; gap:8px;">
+            <button class="btn-add" style="background:var(--quote-purple); height: 38px;" onclick="window.open(quotationLink, '_blank')">📝 Make Quotation</button>
+            <button class="btn-add" style="background:#334155; height: 38px;" onclick="location.reload()">Logout</button>
+        </div>
+    </nav>
+
+    <div class="main">
+        <header class="entry-card">
+            <div class="field-box"><label>Name</label><input type="text" id="name" placeholder="Client Name"></div>
+            <div class="field-box"><label>Phone</label><input type="text" id="phone" placeholder="No."></div>
+            <div class="field-box"><label>Location</label><input type="text" id="loc" placeholder="Area"></div>
+            <div class="field-box"><label>Requirement</label><input type="text" id="req" placeholder="Task"></div>
+            <button class="btn-add" onclick="addLead()">+ Add</button>
+            <button class="btn-add" style="background:transparent; border:1px solid #334155; width:42px;" onclick="openSettings()">⚙️</button>
+        </header>
+        <section class="content">
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 20%;">Client Name</th>
+                            <th style="width: 15%;">Phone</th>
+                            <th style="width: 15%;">Area</th>
+                            <th style="width: 15%;">Task</th>
+                            <th style="width: 15%;">Next Call</th>
+                            <th style="width: 12%;">Status</th>
+                            <th style="width: 8%;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="list"></tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+<script>
+    // Firebase Config
+    const firebaseConfig = { apiKey: "YOUR_API_KEY", databaseURL: "https://crm-modular-1d7de-default-rtdb.firebaseio.com" };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let usersData = {}; 
+    let currentUserRole = "", currentUserName = "", currentUserKey = "";
+    let quotationLink = "https://chetansdesire-design.github.io/UC-Modular-Quotation/";
+    const STAGES = ["New Lead", "Follow Up", "Quoted", "Interested", "In Progress", "Finished", "Dropped"];
+    let currentFilter = 'ALL';
+
+    // 1. Initial Data Load & Login Check
+    db.ref('settings').on('value', snap => {
+        const s = snap.val();
+        if(s) {
+            if(s.users) usersData = s.users;
+            if(s.quoteLink) quotationLink = s.quoteLink;
+        }
+        const lBtn = document.getElementById('loginBtn');
+        lBtn.innerText = "Access CRM"; 
+        lBtn.disabled = false;
+    });
+
+    // 2. Fixed Login Function
+    function checkLogin() {
+        const p = document.getElementById('u_pass').value.trim();
+        let found = false;
+
+        // Emergency Admin Access (Always works)
+        if (p === '1996') {
+            currentUserRole = "admin";
+            currentUserName = "Admin";
+            currentUserKey = "admin_master";
+            
+            // Auto-create Admin in DB if missing
+            db.ref('settings/users/admin_master').update({ name: "Admin", code: "1996", role: "admin" });
+            found = true;
+        } else {
+            // Check other users in database
+            Object.entries(usersData).forEach(([key, u]) => {
+                if(String(u.code).trim() === p) {
+                    currentUserRole = u.role; currentUserName = u.name; currentUserKey = key; found = true;
+                }
+            });
+        }
+
+        if(found) { 
+            document.getElementById('loginOverlay').style.display = 'none'; 
+            initApp(); 
+        } else { 
+            document.getElementById('loginError').style.display = 'block'; 
+        }
+    }
+
+    function initApp() {
+        const stageContainer = document.getElementById('sidebarStages');
+        stageContainer.innerHTML = '';
+        STAGES.forEach((s, i) => {
+            stageContainer.innerHTML += `<div class="nav-item" id="btn-${i}" onclick="setFilter('${i}', this)"><span>${s}</span><span class="count-pill" id="c-${i}">0</span></div>`;
+        });
+        render();
+    }
+
+    function setFilter(v, el) { 
+        currentFilter = v; 
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active')); 
+        el.classList.add('active'); 
+        render(); 
+    }
+
+    function addLead() {
+        const n = document.getElementById('name'); 
+        if(!n.value) { alert("Enter client name"); return; }
+        db.ref('leads').push({ 
+            name: n.value, 
+            phone: document.getElementById('phone').value, 
+            loc: document.getElementById('loc').value, 
+            req: document.getElementById('req').value, 
+            fDate: '', 
+            status: 0,
+            timestamp: Date.now()
+        });
+        n.value = ''; 
+        document.getElementById('phone').value = '';
+        document.getElementById('loc').value = '';
+        document.getElementById('req').value = '';
+    }
+
+    function render() {
+        db.ref('leads').on('value', snap => {
+            const data = snap.val(), body = document.getElementById('list'), today = new Date().toISOString().split('T')[0];
+            body.innerHTML = ''; 
+            let c = { all:0, 0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, today:0, overdue:0 };
+            
+            if(data) {
+                let arr = Object.keys(data).map(k => ({ key: k, ...data[k] }));
+                arr.sort((a,b) => (a.fDate || "9999") > (b.fDate || "9999") ? 1 : -1);
+                
+                arr.forEach(x => {
+                    // Counter Logic
+                    if(x.status !== 5 && x.status !== 6) { 
+                        c.all++; 
+                        if(x.fDate === today) c.today++; 
+                        if(x.fDate && x.fDate < today) c.overdue++; 
+                    }
+                    c[x.status]++;
+
+                    // Filter Logic
+                    let isToday = (x.fDate === today);
+                    let isOv = (x.fDate && x.fDate < today && x.status !== 5 && x.status !== 6);
+                    let show = ((currentFilter === 'ALL' && x.status !== 5 && x.status !== 6) || 
+                                (currentFilter === 'TODAY' && isToday) || 
+                                (currentFilter === 'OVERDUE' && isOv) || 
+                                (x.status.toString() === currentFilter));
+
+                    if(show) {
+                        body.innerHTML += `
+                        <tr>
+                            <td>${x.name}</td>
+                            <td>${x.phone || '-'}</td>
+                            <td>${x.loc || '-'}</td>
+                            <td>${x.req || '-'}</td>
+                            <td>
+                                <input type="date" value="${x.fDate||''}" 
+                                class="date-input ${isOv?'date-overdue':(isToday?'date-today':'')}" 
+                                onchange="db.ref('leads/${x.key}').update({fDate:this.value})">
+                            </td>
+                            <td>
+                                <span class="status-badge s-${x.status}" onclick="db.ref('leads/${x.key}').update({status:(${x.status}+1)%7})">
+                                    ${STAGES[x.status]}
+                                </span>
+                            </td>
+                            <td>
+                                <button class="trash-btn" onclick="if(confirm('Delete lead?')) db.ref('leads/${x.key}').remove()">🗑️</button>
+                            </td>
+                        </tr>`;
+                    }
+                });
+            }
+            // Update counts in UI
+            Object.keys(c).forEach(k => { 
+                const el = document.getElementById('c-'+k);
+                if(el) el.innerText = c[k]; 
+            });
+        });
+    }
+
+    function openSettings() {
+        let menu = "⚙️ SETTINGS\n1. My Password\n2. Quotation Link";
+        if(currentUserRole === "admin") menu += "\n3. ADD User\n4. DELETE User";
+        const choice = prompt(menu);
+        
+        if(choice === "1") {
+            const np = prompt("New Access Code:");
+            if(np) db.ref(`settings/users/${currentUserKey}/code`).set(np.trim());
+        } else if(choice === "2") {
+            const nl = prompt("New Link:", quotationLink);
+            if(nl) db.ref('settings/quoteLink').set(nl.trim());
+        } else if(choice === "3" && currentUserRole === "admin") {
+            const n = prompt("Name:"), p = prompt("Code:"), r = prompt("Role (admin/staff):", "staff");
+            if(n && p) db.ref('settings/users').push({ name: n, code: p, role: r });
+        } else if(choice === "4" && currentUserRole === "admin") {
+            const keys = Object.keys(usersData);
+            let list = "Select # to Delete:\n"; 
+            keys.forEach((k, i) => list += `${i+1}. ${usersData[k].name}\n`);
+            const idx = prompt(list);
+            if(idx && keys[idx-1]) db.ref(`settings/users/${keys[idx-1]}`).remove();
+        }
+    }
+</script>
+</body>
+</html>
