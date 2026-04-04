@@ -132,7 +132,7 @@
     </div>
 
 <script>
-    const firebaseConfig = { apiKey: "YOUR_API_KEY", databaseURL: "https://crm-modular-1d7de-default-rtdb.firebaseio.com" };
+    const firebaseConfig = { apiKey: "AIzaSyAPfDQ7BTpCmW-T0yTMF-d0FKmxg_QWJ5A", databaseURL: "https://crm-modular-1d7de-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
@@ -325,4 +325,16 @@
                                 <button style="cursor:pointer; border:none; background:none; padding:4px;" onclick="addNote('${k}', '${x.name}')" title="Add Note">🕒</button>
                                 <button style="cursor:pointer; border:none; background:none; padding:4px;" onclick="viewHistory('${k}', '${x.name}')" title="View History">📄</button>
                                 <button style="cursor:pointer; border:none; background:none; padding:4px;" onclick="openWhatsApp('${x.phone}', '${x.name}', ${x.status})" title="Smart WhatsApp">🟢</button>
-                                <button style="cursor:pointer; border:none; background:none; padding:4px; ${x.quoteUrl ? 'color:var(--quote-purple); font-weight:800;' : 'opacity:0.5'}" onclick="handleQuoteLink('${k}', '${x.quoteUrl||''}')" ti
+                                <button style="cursor:pointer; border:none; background:none; padding:4px; ${x.quoteUrl ? 'color:var(--quote-purple); font-weight:800;' : 'opacity:0.5'}" onclick="handleQuoteLink('${k}', '${x.quoteUrl||''}')" title="Link Quote">🔗</button>
+                            </td>
+                        </tr>`;
+                    }
+                });
+            }
+            
+            ['all','today','overdue',0,1,2,3,4,5,6].forEach(i => { if(document.getElementById(`c-${i}`)) document.getElementById(`c-${i}`).innerText = c[i]; });
+        });
+    }
+</script>
+</body>
+</html>
