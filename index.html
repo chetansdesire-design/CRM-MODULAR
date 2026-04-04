@@ -20,7 +20,7 @@
         .nav-item.active { background: var(--brand); color: #fff; }
         .count-pill { font-size: 9px; background: rgba(255,255,255,0.1); padding: 1px 6px; border-radius: 20px; }
         
-        /* Modals */
+        /* Modals & Animations */
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(2, 6, 23, 0.85); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
         .modal-card { background: var(--panel); padding: 25px; border-radius: 16px; border: 1px solid var(--border-clr); width: 450px; max-height: 80vh; display: flex; flex-direction: column; }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid var(--border-clr); padding-bottom: 10px; }
@@ -28,10 +28,23 @@
         .close-btn { background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 18px; transition: 0.2s; }
         .close-btn:hover { color: #f87171; }
         
-        .log-list { overflow-y: auto; flex: 1; padding-right: 5px; }
-        .log-entry { font-size: 10px; color: #cbd5e1; margin-bottom: 10px; padding: 8px 12px; background: #0f172a; border-radius: 6px; border-left: 3px solid var(--brand); display: flex; flex-direction: column; gap: 4px; }
-        .log-top { display: flex; justify-content: space-between; color: var(--text-muted); font-size: 9px; }
+        @keyframes pulseRed { 0% { background-color: transparent; } 50% { background-color: rgba(239, 68, 68, 0.2); } 100% { background-color: transparent; } }
+        .flash-red { animation: pulseRed 2s infinite; }
 
+        /* Timeline History UI */
+        .tl-container { border-left: 2px solid var(--border-clr); margin-left: 10px; padding-left: 15px; overflow-y: auto; max-height: 50vh; }
+        .tl-item { position: relative; margin-bottom: 15px; }
+        .tl-item::before { content: ''; position: absolute; left: -21px; top: 0; width: 10px; height: 10px; border-radius: 50%; background: var(--brand); border: 2px solid #0f172a; }
+        .tl-date { font-size: 9px; color: var(--text-muted); margin-bottom: 4px; display: flex; justify-content: space-between; }
+        .tl-content { font-size: 11px; background: #0f172a; padding: 10px; border-radius: 6px; color:#fff; border: 1px solid #334155; }
+
+        /* Focus Mode UI */
+        #focusMode { display: none; padding: 20px; overflow-y: auto; flex: 1; background: #020617; }
+        .focus-header { font-size: 18px; font-weight: 800; color: var(--brand); margin-bottom: 20px; text-transform: uppercase; }
+        .focus-card { background: #1e293b; padding: 20px; border-radius: 12px; margin-bottom: 15px; border-left: 4px solid var(--brand); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        .fc-details h2 { margin: 0 0 5px 0; font-size: 16px; color:#fff; }
+        .fc-details p { margin: 0; font-size: 11px; color: var(--text-muted); line-height:1.4; }
+        
         /* Main View */
         .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         .entry-card { padding: 15px 20px; background: #111827; border-bottom: 1px solid var(--border-clr); display: flex; gap: 8px; align-items: flex-end; }
@@ -39,7 +52,6 @@
         .field-box label { font-size: 8px; font-weight: 800; color: var(--brand); text-transform: uppercase; }
         .field-box input { background: #1f2937; border: 1px solid #374151; border-radius: 6px; padding: 8px; color: white; font-size: 12px; outline: none; }
         
-        /* Table */
         .content { flex: 1; padding: 15px; overflow-y: auto; }
         .table-wrap { border-radius: 12px; border: 1px solid var(--border-clr); background: #0f172a; }
         table { width: 100%; border-collapse: collapse; min-width: 950px; }
@@ -48,17 +60,29 @@
         
         .btn-add { background: var(--brand); color: #fff; border: none; padding: 8px 12px; border-radius: 6px; font-weight: 800; cursor: pointer; font-size: 10px; transition: 0.2s; }
         .btn-add:hover { opacity: 0.8; }
-        .status-badge { padding: 6px; border-radius: 6px; font-size: 9px; font-weight: 800; text-align: center; cursor: pointer; display: block; text-transform: uppercase; }
+        .btn-done { background: #10b981; padding: 10px 16px; font-size: 12px; }
+        
+        .status-badge { padding: 6px; border-radius: 6px; font-size: 9px; font-weight: 800; text-align: center; cursor: pointer; display: block; text-transform: uppercase; width: 100%; border: none; outline: none; }
+        .status-badge option { background: #1e293b; color: #ffffff; font-weight: 600; }
         .s-0 { background: rgba(52, 211, 153, 0.1); color: #34d399; }
+        .s-1 { background: rgba(59, 130, 246, 0.1); color: #60a5fa; }
+        .s-2 { background: rgba(139, 92, 246, 0.1); color: #a78bfa; }
+        .s-3 { background: rgba(245, 158, 11, 0.1); color: #fbbf24; }
+        .s-4 { background: rgba(14, 165, 233, 0.1); color: #38bdf8; }
+        .s-5 { background: rgba(16, 185, 129, 0.1); color: #10b981; }
         .s-6 { background: rgba(239, 68, 68, 0.1); color: #f87171; }
         .date-overdue { color: #f87171 !important; font-weight: 800; }
         
-        .action-select { background: #1e293b; color: var(--text-muted); border: 1px solid #334155; font-size: 9px; padding: 2px 4px; border-radius: 4px; margin-top: 4px; width: 100%; outline: none; cursor:pointer;}
-
-        /* Login */
+        .action-select { background: #1e293b; color: #fff; border: 1px solid #334155; font-size: 9px; padding: 2px 4px; border-radius: 4px; margin-top: 4px; width: 100%; outline: none; cursor:pointer;}
+        
+        /* Login & Settings Forms */
         #loginOverlay { position: fixed; inset: 0; background: #020617; z-index: 9999; display: flex; align-items: center; justify-content: center; }
         .login-card { background: var(--panel); padding: 40px; border-radius: 20px; width: 320px; text-align: center; border: 1px solid var(--border-clr); }
-        .login-card input { width: 100%; padding: 12px; margin: 15px 0; background: #0f172a; border: 1px solid var(--border-clr); color: white; border-radius: 8px; text-align: center; font-size: 18px; letter-spacing: 4px; }
+        .login-card input { width: 100%; padding: 12px; margin: 15px 0; background: #0f172a; border: 1px solid var(--border-clr); color: white; border-radius: 8px; text-align: center; font-size: 18px; letter-spacing: 4px; outline:none; }
+        .set-block { background: #0f172a; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+        .set-label { font-size: 10px; color: var(--brand); font-weight: 800; text-transform: uppercase; display:block; margin-bottom:8px; }
+        .set-input { background: #1e293b; color: #fff; border: 1px solid var(--border-clr); padding: 8px; border-radius: 6px; font-size: 11px; outline:none; width: 100%; }
+        .user-row { display:flex; justify-content:space-between; padding:8px; background:#1e293b; border-radius:6px; margin-bottom:4px; font-size:11px; align-items:center; }
     </style>
 </head>
 <body>
@@ -72,32 +96,84 @@
         </div>
     </div>
 
-    <div id="activityLogModal" class="modal-overlay">
+    <div id="historyModal" class="modal-overlay">
         <div class="modal-card">
             <div class="modal-header">
-                <h3>📜 Live Activity Logs</h3>
-                <button class="close-btn" onclick="closeLogModal()">✖</button>
+                <h3>🕰️ Customer Journey</h3>
+                <button class="close-btn" onclick="closeModal('historyModal')">✖</button>
             </div>
-            <div class="log-list" id="activityLogsContainer">
+            <div class="tl-container" id="historyTimeline"></div>
+        </div>
+    </div>
+
+    <div id="nextActionModal" class="modal-overlay" style="z-index: 1005;">
+        <div class="modal-card" style="width: 350px;">
+            <div class="modal-header">
+                <h3>📅 Plan Next Step</h3>
+            </div>
+            <p style="font-size:11px; color:var(--text-muted); margin-top:0;">You must log a future follow-up for this client to proceed.</p>
+            <input type="hidden" id="na_lead_key">
+            <input type="hidden" id="na_lead_name">
+            <div class="set-block">
+                <label class="set-label">Next Action Date</label>
+                <input type="date" id="na_date" class="set-input">
+            </div>
+            <div class="set-block">
+                <label class="set-label">Required Task</label>
+                <select id="na_task" class="set-input">
+                    <option value="Call">📞 Follow-up Call</option>
+                    <option value="Showroom Visit">🏢 Showroom Visit</option>
+                    <option value="Quote Review">📝 Quote Review</option>
+                    <option value="Site Measure">📏 Site Measure</option>
+                </select>
+            </div>
+            <button class="btn-add btn-done" style="width:100%" onclick="saveNextAction()">Save Next Action</button>
+        </div>
+    </div>
+
+    <div id="notificationsModal" class="modal-overlay"><div class="modal-card"><div class="modal-header"><h3>🔔 My Messages & Alerts</h3><button class="close-btn" onclick="closeModal('notificationsModal')">✖</button></div><div id="alertsContainer"></div></div></div>
+    
+    <div id="sendAlertModal" class="modal-overlay"><div class="modal-card" style="width:350px;"><div class="modal-header"><h3>📢 Alert Staff</h3><button class="close-btn" onclick="closeModal('sendAlertModal')">✖</button></div><input type="hidden" id="alert_lead_key"><input type="hidden" id="alert_lead_name"><div class="set-block"><label class="set-label">Send To</label><select id="alert_target_user" class="set-input"></select></div><div class="set-block"><label class="set-label">Message</label><input type="text" id="alert_message" class="set-input" placeholder="Instructions..."></div><button class="btn-add" style="width:100%" onclick="confirmSendAlert()">Send Alert</button></div></div>
+    
+    <div id="settingsModal" class="modal-overlay">
+        <div class="modal-card" style="width: 500px;">
+            <div class="modal-header"><h3>⚙️ System Settings</h3><button class="close-btn" onclick="closeModal('settingsModal')">✖</button></div>
+            <div style="overflow-y:auto; padding-right:5px; max-height:60vh;">
+                <div class="set-block" id="adminQuoteSection" style="display:none;"><label class="set-label">Master Quote Link</label><div style="display:flex; gap:8px;"><input type="text" id="set_quote" class="set-input"><button class="btn-add" onclick="saveQuoteLink()">Save</button></div></div>
+                <div class="set-block"><label class="set-label">Change My PIN</label><div style="display:flex; gap:8px;"><input type="password" id="set_pass" class="set-input" placeholder="New PIN"><button class="btn-add" onclick="updateMyPassword()">Update</button></div></div>
+                
+                <div class="set-block" id="adminUserSection" style="display:none;">
+                    <label class="set-label">User Management (Admin Only)</label>
+                    <div style="display:flex; gap:6px; margin-bottom:15px;">
+                        <input type="text" id="new_u_name" class="set-input" placeholder="Name" style="width:35%;">
+                        <select id="new_u_role" class="set-input" style="width:30%;">
+                            <option value="sales">Sales</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                        <input type="password" id="new_u_code" class="set-input" placeholder="PIN" style="width:20%;">
+                        <button class="btn-add" onclick="addUser()" style="flex:1;">Add</button>
+                    </div>
+                    <div id="userListContainer"></div>
                 </div>
+            </div>
         </div>
     </div>
 
     <nav class="sidebar">
         <div class="logo-main">URBAN CASA</div>
-        <div class="nav-item active" onclick="setFilter('ALL', this)"><span>All Active</span><span class="count-pill" id="c-all">0</span></div>
-        <div id="sidebarStages"></div>
-        <div class="nav-item" onclick="setFilter('TODAY', this)" style="color:#34d399"><span>📅 Today Actions</span><span class="count-pill" id="c-today">0</span></div>
-        <div class="nav-item" onclick="setFilter('OVERDUE', this)" style="color:#f87171"><span>⚠️ Overdue</span><span class="count-pill" id="c-overdue">0</span></div>
         
-        <hr style="border: 0; border-top: 1px solid var(--border-clr); width: 100%; margin: 15px 0;">
-        
-        <div class="nav-item" onclick="openLogModal()" style="border: 1px solid var(--border-clr); justify-content: center; color: #cbd5e1;">
-            <span>📜 View Activity Logs</span>
+        <div class="nav-item" onclick="toggleFocusMode(true)" style="background:#fbbf24; color:#000; justify-content:center; padding:12px; margin-bottom:15px; font-weight:800; font-size:12px;">
+            <span>🎯 FOCUS MODE</span>
         </div>
 
+        <div class="nav-item active" id="nav-all" onclick="setFilter('ALL', this)"><span>All Active</span><span class="count-pill" id="c-all">0</span></div>
+        <div id="sidebarStages"></div>
+        <div class="nav-item" id="nav-today" onclick="setFilter('TODAY', this)" style="color:#34d399"><span>📅 Today Actions</span><span class="count-pill" id="c-today">0</span></div>
+        <div class="nav-item" id="nav-overdue" onclick="setFilter('OVERDUE', this)" style="color:#f87171"><span>⚠️ Overdue</span><span class="count-pill" id="c-overdue">0</span></div>
+        
+        <hr style="border: 0; border-top: 1px solid var(--border-clr); width: 100%; margin: 15px 0;">
         <div style="margin-top: auto; padding-top: 15px; display:flex; flex-direction:column; gap:6px;">
-            <button class="btn-add" style="background:#8b5cf6" onclick="window.open(quotationLink, '_blank')">📝 Master Quote App</button>
+            <button class="btn-add" style="background:#8b5cf6" onclick="window.open(quotationLink, '_blank')">📝 Quote App</button>
             <button class="btn-add" style="background:#334155" onclick="location.reload()">Logout</button>
         </div>
     </nav>
@@ -109,21 +185,26 @@
             <div class="field-box"><label>Area</label><input type="text" id="loc" placeholder="Location"></div>
             <div class="field-box"><label>Requirement</label><input type="text" id="req" placeholder="Task"></div>
             <button class="btn-add" onclick="addLead()">+ Add</button>
+            <button class="btn-add" style="background:transparent; border:1px solid #334155; width:42px;" onclick="toggleSearch()" title="Search">🔍</button>
+            <button class="btn-add" style="background:transparent; border:1px solid #334155; width:42px; position:relative;" onclick="document.getElementById('notificationsModal').style.display='flex'">🔔 <span id="notifBadge" style="display:none; position:absolute; top:-5px; right:-5px; background:#ef4444; color:white; border-radius:50%; font-size:9px; padding:2px 5px;">0</span></button>
             <button class="btn-add" style="background:transparent; border:1px solid #334155; width:42px;" onclick="openSettings()">⚙️</button>
         </header>
+        
+        <div id="searchRow" style="display:none; padding: 10px 20px; background: #0f172a; border-bottom: 1px solid var(--border-clr);">
+            <input type="text" id="searchInput" placeholder="Search by Client Name or Phone..." onkeyup="render()" style="width:100%; background:#1e293b; border:1px solid #334155; color:#fff; padding:10px; border-radius:6px; outline:none;">
+        </div>
 
-        <section class="content">
+        <div id="focusMode">
+            <div class="focus-header">🎯 Today's Execution List</div>
+            <div id="focusList"></div>
+            <button class="btn-add" style="background:#334155; margin-top:20px;" onclick="toggleFocusMode(false)">← Exit Focus Mode</button>
+        </div>
+
+        <section class="content" id="standardView">
             <div class="table-wrap">
                 <table>
                     <thead>
-                        <tr>
-                            <th style="width:15%">Customer</th>
-                            <th style="width:12%">Phone</th>
-                            <th style="width:15%">Task & Reason</th>
-                            <th style="width:15%">Next Action</th>
-                            <th style="width:12%">Stage</th>
-                            <th style="width:20%">Tools & History</th>
-                        </tr>
+                        <tr><th style="width:15%">Customer</th><th style="width:12%">Phone</th><th style="width:15%">Task & Reason</th><th style="width:15%">Next Action</th><th style="width:12%">Stage</th><th style="width:20%">Tools & History</th></tr>
                     </thead>
                     <tbody id="list"></tbody>
                 </table>
@@ -136,204 +217,365 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let usersData = {}; 
-    let currentUserRole = "", currentUserName = "User", currentUserKey = "";
+    let usersData = {}; let currentUserRole = "", currentUserName = "User", currentUserKey = "";
     let quotationLink = "https://chetansdesire-design.github.io/UC-Modular-Quotation/";
+    let adminMasterPass = "1996"; 
     const STAGES = ["New Lead", "Follow Up", "Quoted", "Interested", "In Progress", "Finished", "Dropped"];
     let currentFilter = 'ALL';
+    let globalLeadsData = {}; 
 
     db.ref('settings').on('value', snap => {
         const s = snap.val();
-        if(s) { usersData = s.users || {}; quotationLink = s.quoteLink || quotationLink; }
-        const lBtn = document.getElementById('loginBtn');
-        lBtn.innerText = "Access CRM"; lBtn.disabled = false;
+        if(s) { usersData = s.users || {}; quotationLink = s.quoteLink || quotationLink; if(s.adminPass) adminMasterPass = s.adminPass; }
+        document.getElementById('loginBtn').innerText = "Access CRM"; document.getElementById('loginBtn').disabled = false;
+        
+        // Ensure user list renders immediately if settings modal is open
+        if(document.getElementById('settingsModal').style.display === 'flex') {
+            renderUserList(); 
+        }
     });
 
     function checkLogin() {
         const p = document.getElementById('u_pass').value.trim();
-        if (p === '1996') {
-            currentUserRole = "admin"; currentUserName = "Admin"; currentUserKey = "admin_master";
-            loginDone();
-        } else {
+        if (p === adminMasterPass) { currentUserRole = "admin"; currentUserName = "Master Admin"; currentUserKey = "admin_master"; loginDone(); } 
+        else {
             let found = false;
             Object.entries(usersData).forEach(([k, u]) => { if(String(u.code) === p) { currentUserRole = u.role; currentUserName = u.name; currentUserKey = k; found = true; }});
             if(found) loginDone(); else document.getElementById('loginError').style.display = 'block';
         }
     }
 
-    function loginDone() { 
-        document.getElementById('loginOverlay').style.display = 'none'; 
-        initApp(); 
-        logActivity("Logged In");
-    }
+    function loginDone() { document.getElementById('loginOverlay').style.display = 'none'; initApp(); }
 
     function initApp() {
-        const sc = document.getElementById('sidebarStages');
-        sc.innerHTML = '';
-        STAGES.forEach((s, i) => sc.innerHTML += `<div class="nav-item" onclick="setFilter('${i}', this)"><span>${s}</span><span class="count-pill" id="c-${i}">0</span></div>`);
-        render();
-        renderLogs();
+        const sc = document.getElementById('sidebarStages'); sc.innerHTML = '';
+        STAGES.forEach((s, i) => sc.innerHTML += `<div class="nav-item" id="nav-${i}" onclick="setFilter('${i}', this)"><span>${s}</span><span class="count-pill" id="c-${i}">0</span></div>`);
+        render(); listenToNotifications();
     }
 
     function setFilter(v, el) {
+        toggleFocusMode(false); 
         currentFilter = v;
         document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-        el.classList.add('active');
+        if(el) el.classList.add('active');
         render();
     }
 
-    // Modal Control
-    function openLogModal() { document.getElementById('activityLogModal').style.display = 'flex'; }
-    function closeLogModal() { document.getElementById('activityLogModal').style.display = 'none'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
-    // Close modal if user clicks outside the card
+    // Lock the Next Action Modal from being bypassed via background click
     window.onclick = function(event) {
-        const modal = document.getElementById('activityLogModal');
-        if (event.target === modal) { closeLogModal(); }
+        if (event.target.classList.contains('modal-overlay') && event.target.id !== 'nextActionModal') {
+            event.target.style.display = 'none';
+        }
     }
 
-    function logActivity(act) {
-        db.ref('activity_logs').push({
-            user: currentUserName, action: act,
-            date: new Date().toLocaleDateString(),
-            time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+    // --- FOCUS MODE LOGIC ---
+    function toggleFocusMode(enable) {
+        const sm = document.getElementById('standardView');
+        const fm = document.getElementById('focusMode');
+        if(enable) {
+            sm.style.display = 'none'; fm.style.display = 'block';
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            renderFocusMode();
+        } else {
+            sm.style.display = 'block'; fm.style.display = 'none';
+        }
+    }
+
+    function renderFocusMode() {
+        const fl = document.getElementById('focusList');
+        fl.innerHTML = '';
+        const today = new Date().toISOString().split('T')[0];
+        let count = 0;
+
+        Object.entries(globalLeadsData).forEach(([k, x]) => {
+            if (x.status !== 5 && x.status !== 6 && x.fDate === today) {
+                count++;
+                fl.innerHTML += `
+                <div class="focus-card">
+                    <div class="fc-details">
+                        <h2>${x.name} <span style="font-size:12px; color:var(--text-muted); font-weight:400;">(${x.phone})</span></h2>
+                        <p><b>Area:</b> ${x.loc || '-'} | <b>Requirement:</b> ${x.req || '-'}</p>
+                        <p style="color:#fbbf24; margin-top:5px;"><b>Task Today:</b> ${x.fAction}</p>
+                    </div>
+                    <div>
+                        <button class="btn-add btn-done" onclick="completeFocusTask('${k}', '${x.name}')">✓ Log Action</button>
+                        <button class="btn-add" style="background:#334155; margin-left:5px;" onclick="openWhatsApp('${x.phone}', '${x.name}', ${x.status})">WhatsApp</button>
+                    </div>
+                </div>`;
+            }
         });
+        if(count === 0) fl.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:40px;">Great job! You have no pending tasks for today.</div>`;
     }
 
-    function renderLogs() {
-        // Increased limit to 50 since it's now inside a scrollable popup
-        db.ref('activity_logs').limitToLast(50).on('value', snap => {
-            const container = document.getElementById('activityLogsContainer');
+    function completeFocusTask(k, name) { addNote(k, name); }
+
+    // --- FORCED NEXT ACTION LOGIC ---
+    function triggerNextAction(k, name) {
+        document.getElementById('nextActionModal').style.display = 'flex';
+        document.getElementById('na_lead_key').value = k;
+        document.getElementById('na_lead_name').value = name;
+        
+        const dateInput = document.getElementById('na_date');
+        dateInput.value = ''; 
+        // Prevent selecting past dates
+        dateInput.setAttribute('min', new Date().toISOString().split('T')[0]);
+    }
+
+    function saveNextAction() {
+        const k = document.getElementById('na_lead_key').value;
+        const d = document.getElementById('na_date').value;
+        const t = document.getElementById('na_task').value;
+        
+        if(!d) return alert("You must select a future date to proceed.");
+        
+        db.ref(`leads/${k}`).update({ fDate: d, fAction: t });
+        closeModal('nextActionModal');
+        if(document.getElementById('focusMode').style.display === 'block') renderFocusMode(); 
+    }
+
+    function addNote(k, name) {
+        const msg = prompt(`Add interaction note for ${name}:`);
+        if(msg) { 
+            db.ref(`leads/${k}/history`).push({ note: msg, user: currentUserName, time: new Date().toLocaleString() }); 
+            triggerNextAction(k, name); 
+        }
+    }
+
+    // --- AUTOMATED WHATSAPP TRIGGERS ---
+    function changeStatus(k, newStatusNum, name, phone) {
+        newStatusNum = parseInt(newStatusNum);
+        let updates = { status: newStatusNum };
+        let reqNextAction = true;
+
+        if (STAGES[newStatusNum] === "Dropped") {
+            let reason = prompt(`Why is ${name} being dropped?`);
+            if (reason === null) { render(); return; } 
+            db.ref(`leads/${k}/history`).push({ note: `Dropped Reason: ${reason}`, user: currentUserName, time: new Date().toLocaleString() });
+            updates.dropReason = reason; reqNextAction = false;
+            
+            if(confirm("Send 'Thank You' WhatsApp template to dropped client?")) {
+                let msg = `Hi ${name}, thank you for considering Urban Casa. Although we couldn't proceed this time, feel free to save our number for any future modular furniture needs!`;
+                window.open(`https://wa.me/91${phone}?text=${encodeURIComponent(msg)}`);
+            }
+        } 
+        else if (STAGES[newStatusNum] === "Quoted") {
+            if(confirm("Send Quotation Ready WhatsApp template?")) {
+                let msg = `Hi ${name}, I have prepared the estimate for your modular setup. Let me know when you have 5 minutes to review it together!`;
+                window.open(`https://wa.me/91${phone}?text=${encodeURIComponent(msg)}`);
+            }
+        }
+        else if (STAGES[newStatusNum] === "Finished") { reqNextAction = false; }
+        
+        db.ref(`leads/${k}`).update(updates);
+        if(reqNextAction) triggerNextAction(k, name);
+    }
+
+    // --- RICH HISTORY TIMELINE ---
+    function viewHistory(k, name) {
+        db.ref(`leads/${k}/history`).once('value', snap => {
+            const h = snap.val();
+            const container = document.getElementById('historyTimeline');
             container.innerHTML = '';
-            const logs = snap.val();
-            if(logs) {
-                Object.values(logs).reverse().forEach(l => {
+            document.getElementById('historyModal').style.display = 'flex';
+
+            if(h) {
+                Object.values(h).reverse().forEach(v => {
                     container.innerHTML += `
-                    <div class="log-entry">
-                        <div class="log-top"><span>👤 <b>${l.user}</b></span> <span>🕒 ${l.date} - ${l.time}</span></div>
-                        <div>${l.action}</div>
+                    <div class="tl-item">
+                        <div class="tl-date"><b>${v.user}</b> <span>${v.time}</span></div>
+                        <div class="tl-content">${v.note}</div>
                     </div>`;
                 });
             } else {
-                container.innerHTML = `<div style="text-align:center; color:var(--text-muted); margin-top:20px;">No activity logged yet.</div>`;
+                container.innerHTML = `<div style="color:var(--text-muted); text-align:center;">No history recorded yet.</div>`;
             }
         });
     }
 
+    function toggleSearch() {
+        const sr = document.getElementById('searchRow'); const si = document.getElementById('searchInput');
+        if(sr.style.display === 'none') { sr.style.display = 'block'; si.focus(); } else { sr.style.display = 'none'; si.value = ''; render(); }
+    }
+
     function addLead() {
-        const n = document.getElementById('name');
-        if(!n.value) return;
+        const n = document.getElementById('name'); if(!n.value) return;
         db.ref('leads').push({
-            name: n.value, phone: document.getElementById('phone').value,
-            loc: document.getElementById('loc').value, req: document.getElementById('req').value,
-            history: [{note: "Lead Created", user: currentUserName, time: new Date().toLocaleString()}],
-            fDate: "", fAction: "Call", status: 0, quoteUrl: ""
+            name: n.value, phone: document.getElementById('phone').value, loc: document.getElementById('loc').value, req: document.getElementById('req').value,
+            history: [{note: "Lead Created", user: currentUserName, time: new Date().toLocaleString()}], fDate: "", fAction: "Call", status: 0, quoteUrl: ""
         });
-        logActivity(`Added Lead: ${n.value}`);
-        n.value = ''; document.getElementById('phone').value = '';
+        n.value = ''; document.getElementById('phone').value = ''; document.getElementById('loc').value = ''; document.getElementById('req').value = '';
     }
 
-    function cycleStatus(k, currentStatus, name) {
-        let nextStatus = (currentStatus + 1) % 7;
-        let updates = { status: nextStatus };
+    // --- CORE RENDER WITH AUTO-ESCALATION ---
+    function render() {
+        db.ref('leads').on('value', snap => {
+            globalLeadsData = snap.val() || {}; 
+            const body = document.getElementById('list'), today = new Date().toISOString().split('T')[0];
+            const searchQ = document.getElementById('searchInput') ? document.getElementById('searchInput').value.toLowerCase() : '';
+            
+            body.innerHTML = '';
+            let c = { all:0, today:0, overdue:0, 0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0 };
+            const rightNow = new Date();
+            
+            Object.keys(globalLeadsData).forEach(k => {
+                const x = globalLeadsData[k];
+                const isToday = (x.fDate === today);
+                const isOv = (x.fDate && x.fDate < today && x.status !== 5 && x.status !== 6);
+                
+                let isEscalated = false;
+                if(isOv) {
+                    const fDateObj = new Date(x.fDate);
+                    const diffDays = Math.ceil(Math.abs(rightNow - fDateObj) / (1000 * 60 * 60 * 24));
+                    if(diffDays > 2) isEscalated = true;
+                }
+                
+                if(x.status !== 5 && x.status !== 6) { c.all++; if(isToday) c.today++; if(isOv) c.overdue++; }
+                c[x.status]++;
 
-        if (STAGES[nextStatus] === "Dropped") {
-            let reason = prompt(`Why is ${name} being dropped?`);
-            if (reason === null) return; 
-            db.ref(`leads/${k}/history`).push({ note: `Dropped Reason: ${reason}`, user: currentUserName, time: new Date().toLocaleString() });
-            updates.dropReason = reason;
-            logActivity(`Dropped ${name}: ${reason}`);
+                let show = (currentFilter === 'ALL' && x.status !== 5 && x.status !== 6) || (currentFilter === 'TODAY' && isToday) || (currentFilter === 'OVERDUE' && isOv) || (x.status.toString() === currentFilter);
+                if (show && searchQ) {
+                    if (!(x.name && x.name.toLowerCase().includes(searchQ)) && !(x.phone && x.phone.includes(searchQ))) show = false;
+                }
+
+                if(show) {
+                    let stageOptions = STAGES.map((s, i) => `<option value="${i}" ${x.status == i ? 'selected' : ''}>${s}</option>`).join('');
+                    body.innerHTML += `
+                    <tr class="${isEscalated ? 'flash-red' : ''}">
+                        <td><b>${x.name}</b><br><small style="color:var(--text-muted)">${x.loc || '-'}</small></td>
+                        <td>${x.phone || '-'}</td>
+                        <td>${x.req || '-'}<br><small style="color:#ec4899">${x.status === 6 && x.dropReason ? 'Lost: '+x.dropReason : ''}</small></td>
+                        <td>
+                            <div style="display:flex; flex-direction:column; gap:2px;">
+                                <input type="date" value="${x.fDate||''}" class="${isOv?'date-overdue':''}" style="background:transparent; color:inherit; border:none; outline:none;" onchange="db.ref('leads/${k}').update({fDate:this.value})">
+                                <select class="action-select" onchange="db.ref('leads/${k}').update({fAction:this.value})">
+                                    <option value="Call" ${x.fAction==='Call'?'selected':''}>📞 Call</option>
+                                    <option value="Showroom Visit" ${x.fAction==='Showroom Visit'?'selected':''}>🏢 Showroom Visit</option>
+                                    <option value="Quote Review" ${x.fAction==='Quote Review'?'selected':''}>📝 Quote Review</option>
+                                    <option value="Site Measure" ${x.fAction==='Site Measure'?'selected':''}>📏 Site Measure</option>
+                                </select>
+                            </div>
+                        </td>
+                        <td><select class="status-badge s-${x.status}" onchange="changeStatus('${k}', this.value, '${x.name}', '${x.phone}')">${stageOptions}</select></td>
+                        <td>
+                            <button style="cursor:pointer; border:none; background:none; padding:4px;" onclick="addNote('${k}', '${x.name}')" title="Add Note">🕒</button>
+                            <button style="cursor:pointer; border:none; background:none; padding:4px;" onclick="openAlertModal('${k}', '${x.name}')" title="Alert Staff">📢</button>
+                            <button style="cursor:pointer; border:none; background:none; padding:4px;" onclick="viewHistory('${k}', '${x.name}')" title="View History">📄</button>
+                            <button style="cursor:pointer; border:none; background:none; padding:4px;" onclick="openWhatsApp('${x.phone}', '${x.name}', ${x.status})" title="Smart WhatsApp">🟢</button>
+                            <button style="cursor:pointer; border:none; background:none; padding:4px; ${x.quoteUrl ? 'color:var(--quote-purple); font-weight:800;' : 'opacity:0.5'}" onclick="handleQuoteLink('${k}', '${x.quoteUrl||''}')" title="Link Quote">🔗</button>
+                        </td>
+                    </tr>`;
+                }
+            });
+            ['all','today','overdue',0,1,2,3,4,5,6].forEach(i => { if(document.getElementById(`c-${i}`)) document.getElementById(`c-${i}`).innerText = c[i]; });
+            if(document.getElementById('focusMode').style.display === 'block') renderFocusMode();
+        });
+    }
+
+    function listenToNotifications() {
+        if(!currentUserKey) return;
+        db.ref(`notifications/${currentUserKey}`).on('value', snap => {
+            const data = snap.val(); const badge = document.getElementById('notifBadge'); const container = document.getElementById('alertsContainer');
+            container.innerHTML = '';
+            if(data) {
+                badge.style.display = 'block'; badge.innerText = Object.keys(data).length;
+                Object.entries(data).reverse().forEach(([k, a]) => {
+                    container.innerHTML += `<div style="background:#0f172a; padding:10px; border-radius:6px; border-left:3px solid #ef4444; margin-bottom:10px;"><div style="display:flex; justify-content:space-between; font-size:9px; color:var(--text-muted)"><span>From: <b>${a.from}</b></span><span>${a.time}</span></div><div style="font-size:12px; color:#fff; margin-top:4px;"><b>Ref: ${a.lead}</b></div><div style="margin:6px 0; color:#cbd5e1; font-size:11px;">"${a.msg}"</div><button class="btn-add" style="background:#334155; font-size:9px; padding:4px 8px;" onclick="db.ref('notifications/${currentUserKey}/${k}').remove()">Mark Read ✓</button></div>`;
+                });
+            } else { badge.style.display = 'none'; container.innerHTML = `<div style="text-align:center; color:var(--text-muted); margin-top:20px;">No new messages.</div>`; }
+        });
+    }
+
+    function openAlertModal(leadKey, leadName) {
+        document.getElementById('sendAlertModal').style.display = 'flex'; document.getElementById('alert_lead_key').value = leadKey; document.getElementById('alert_lead_name').value = leadName; document.getElementById('alert_message').value = '';
+        const sel = document.getElementById('alert_target_user'); sel.innerHTML = `<option value="admin_master">Master Admin</option>`;
+        Object.entries(usersData).forEach(([k, u]) => { sel.innerHTML += `<option value="${k}">${u.name} (${u.role})</option>`; });
+    }
+
+    function confirmSendAlert() {
+        const msg = document.getElementById('alert_message').value.trim(); if(!msg) return alert("Type instructions.");
+        db.ref(`notifications/${document.getElementById('alert_target_user').value}`).push({ lead: document.getElementById('alert_lead_name').value, msg: msg, from: currentUserName, time: new Date().toLocaleString() });
+        closeModal('sendAlertModal'); alert("Alert Sent!");
+    }
+
+    // --- RESTORED USER MANAGEMENT ---
+    function openSettings() { 
+        document.getElementById('settingsModal').style.display = 'flex'; 
+        document.getElementById('set_quote').value = quotationLink; 
+        document.getElementById('set_pass').value = ''; 
+        
+        if (currentUserRole === 'admin') { 
+            document.getElementById('adminQuoteSection').style.display = 'block'; 
+            document.getElementById('adminUserSection').style.display = 'block';
+            renderUserList();
         } else {
-            logActivity(`Status: ${name} to ${STAGES[nextStatus]}`);
-        }
-        db.ref(`leads/${k}`).update(updates);
-    }
-
-    function addNote(k, name) {
-        const msg = prompt(`Add New Follow-up Note for ${name}:`);
-        if(msg) {
-            db.ref(`leads/${k}/history`).push({ note: msg, user: currentUserName, time: new Date().toLocaleString() });
-            logActivity(`Note added for ${name}`);
+            document.getElementById('adminQuoteSection').style.display = 'none'; 
+            document.getElementById('adminUserSection').style.display = 'none';
         }
     }
 
-    function viewHistory(k, name) {
-        db.ref(`leads/${k}/history`).once('value', snap => {
-            const h = snap.val();
-            let txt = `HISTORY FOR ${name.toUpperCase()}:\n\n`;
-            if(h) Object.values(h).forEach(v => txt += `[${v.time}] ${v.user}: ${v.note}\n-----------------\n`);
-            alert(txt || "No history found.");
+    function saveQuoteLink() { db.ref('settings').update({ quoteLink: document.getElementById('set_quote').value.trim() }); alert("Saved!"); }
+    
+    function updateMyPassword() { 
+        const np = document.getElementById('set_pass').value.trim(); 
+        if(!np) return; 
+        if(currentUserKey === 'admin_master') { db.ref('settings').update({ adminPass: np }); adminMasterPass = np; } 
+        else { db.ref(`settings/users/${currentUserKey}`).update({ code: np }); } 
+        alert("Updated!"); document.getElementById('set_pass').value = ''; 
+    }
+
+    function addUser() {
+        const n = document.getElementById('new_u_name').value.trim();
+        const r = document.getElementById('new_u_role').value;
+        const c = document.getElementById('new_u_code').value.trim();
+        
+        if(!n || !c) return alert("Name and Code are required.");
+        
+        db.ref('settings/users').push({ name: n, role: r, code: c });
+        document.getElementById('new_u_name').value = '';
+        document.getElementById('new_u_code').value = '';
+    }
+
+    function deleteUser(key, name) {
+        if(confirm(`Are you sure you want to delete user ${name}?`)) {
+            db.ref(`settings/users/${key}`).remove();
+        }
+    }
+
+    function renderUserList() {
+        const c = document.getElementById('userListContainer');
+        c.innerHTML = `<div class="user-row" style="background:#334155; border:1px solid #475569;">
+            <span><b>Master Admin</b> (admin)</span>
+            <span style="color:#f87171">Primary</span>
+        </div>`;
+        
+        Object.entries(usersData).forEach(([k, u]) => {
+            c.innerHTML += `
+            <div class="user-row">
+                <span><b>${u.name}</b> (${u.role}) - PIN: ${u.code}</span>
+                <button style="background:none; border:none; cursor:pointer; font-size:12px;" onclick="deleteUser('${k}', '${u.name}')" title="Delete">🗑️</button>
+            </div>`;
         });
     }
+    // ---------------------------------
 
+    // --- RESTORED SMART WHATSAPP LOGIC ---
     function openWhatsApp(phone, name, statusNum) {
-        let statusStr = STAGES[statusNum];
         let msg = `Hi ${name}, `;
-        if(statusStr === "New Lead") msg += `thank you for reaching out to Urban Casa! How can we help you with your modular kitchen and wardrobe requirements?`;
-        else if(statusStr === "Quoted") msg += `I've prepared the estimate for your modular setup. Let me know when you have 5 minutes to review it together!`;
-        else if(statusStr === "Follow Up") msg += `we recently updated our displays with new premium finishes. Would you like to drop by the showroom?`;
+        
+        // Smart Context based on Stage
+        if(statusNum === 0) msg += `thank you for reaching out to Urban Casa! How can we help you with your modular kitchen and wardrobe requirements?`;
+        else if(statusNum === 2) msg += `I've prepared the estimate for your modular setup. Let me know when you have 5 minutes to review it together!`;
+        else if(statusNum === 1) msg += `we recently updated our displays with new premium finishes. Would you like to drop by the showroom?`;
         else msg += `this is Urban Casa following up on your modular furniture inquiry.`;
+        
         window.open(`https://wa.me/91${phone}?text=${encodeURIComponent(msg)}`);
     }
 
     function handleQuoteLink(k, currentUrl) {
-        if(currentUrl) {
-            if(confirm("Open Client's Quotation Document?\n(Click Cancel to edit the link)")) window.open(currentUrl, '_blank');
-            else { let nu = prompt("Edit Specific Quote Link:", currentUrl); if(nu !== null) db.ref(`leads/${k}`).update({quoteUrl: nu.trim()}); }
-        } else {
-            let nu = prompt("Paste specific Google Drive or Quote PDF link for this client:");
-            if(nu) db.ref(`leads/${k}`).update({quoteUrl: nu.trim()});
-        }
-    }
-
-    function render() {
-        db.ref('leads').on('value', snap => {
-            const data = snap.val(), body = document.getElementById('list'), today = new Date().toISOString().split('T')[0];
-            body.innerHTML = '';
-            let c = { all:0, today:0, overdue:0, 0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0 };
-            
-            if(data) {
-                Object.keys(data).forEach(k => {
-                    const x = data[k];
-                    const isToday = (x.fDate === today);
-                    const isOv = (x.fDate && x.fDate < today && x.status !== 5 && x.status !== 6);
-                    
-                    if(x.status !== 5 && x.status !== 6) { c.all++; if(isToday) c.today++; if(isOv) c.overdue++; }
-                    c[x.status]++;
-
-                    let show = (currentFilter === 'ALL' && x.status !== 5 && x.status !== 6) || (currentFilter === 'TODAY' && isToday) || (currentFilter === 'OVERDUE' && isOv) || (x.status.toString() === currentFilter);
-
-                    if(show) {
-                        body.innerHTML += `
-                        <tr>
-                            <td><b>${x.name}</b><br><small style="color:var(--text-muted)">${x.loc || '-'}</small></td>
-                            <td>${x.phone || '-'}</td>
-                            <td>${x.req || '-'}<br><small style="color:#ec4899">${x.status === 6 && x.dropReason ? 'Lost: '+x.dropReason : ''}</small></td>
-                            <td>
-                                <div style="display:flex; flex-direction:column; gap:2px;">
-                                    <input type="date" value="${x.fDate||''}" class="${isOv?'date-overdue':''}" style="background:transparent; color:inherit; border:none; outline:none;" onchange="db.ref('leads/${k}').update({fDate:this.value}); logActivity('Changed Date for ${x.name}')">
-                                    <select class="action-select" onchange="db.ref('leads/${k}').update({fAction:this.value}); logActivity('Set Action for ${x.name}')">
-                                        <option value="Call" ${x.fAction==='Call'?'selected':''}>📞 Call</option>
-                                        <option value="Showroom Visit" ${x.fAction==='Showroom Visit'?'selected':''}>🏢 Showroom Visit</option>
-                                        <option value="Quote Review" ${x.fAction==='Quote Review'?'selected':''}>📝 Quote Review</option>
-                                        <option value="Site Measure" ${x.fAction==='Site Measure'?'selected':''}>📏 Site Measure</option>
-                                    </select>
-                                </div>
-                            </td>
-                            <td><span class="status-badge s-${x.status}" onclick="cycleStatus('${k}', ${x.status}, '${x.name}')">${STAGES[x.status]}</span></td>
-                            <td>
-                                <button style="cursor:pointer; border:none; background:none; padding:4px;" onclick="addNote('${k}', '${x.name}')" title="Add Note">🕒</button>
-                                <button style="cursor:pointer; border:none; background:none; padding:4px;" onclick="viewHistory('${k}', '${x.name}')" title="View History">📄</button>
-                                <button style="cursor:pointer; border:none; background:none; padding:4px;" onclick="openWhatsApp('${x.phone}', '${x.name}', ${x.status})" title="Smart WhatsApp">🟢</button>
-                                <button style="cursor:pointer; border:none; background:none; padding:4px; ${x.quoteUrl ? 'color:var(--quote-purple); font-weight:800;' : 'opacity:0.5'}" onclick="handleQuoteLink('${k}', '${x.quoteUrl||''}')" title="Link Quote">🔗</button>
-                            </td>
-                        </tr>`;
-                    }
-                });
-            }
-            
-            ['all','today','overdue',0,1,2,3,4,5,6].forEach(i => { if(document.getElementById(`c-${i}`)) document.getElementById(`c-${i}`).innerText = c[i]; });
-        });
+        if(currentUrl) { if(confirm("Open Client's Quotation Document?")) window.open(currentUrl, '_blank'); else { let nu = prompt("Edit Specific Quote Link:", currentUrl); if(nu !== null) db.ref(`leads/${k}`).update({quoteUrl: nu.trim()}); } } 
+        else { let nu = prompt("Paste specific Google Drive or Quote PDF link for this client:"); if(nu) db.ref(`leads/${k}`).update({quoteUrl: nu.trim()}); }
     }
 </script>
 </body>
